@@ -1,7 +1,6 @@
 package practice.databaseProject.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +15,7 @@ import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.join.JoinService;
 import practice.databaseProject.join.MultipleJoinService;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -110,6 +107,18 @@ public class Controller {
     @PostMapping(value = "/addcombinekey")
     public ResponseEntity<Void> addCombineKey(@RequestBody AddCombineKeyRequest addCombineKeyRequest) throws Exception {
         standardCombineKeyDictionary.add(addCombineKeyRequest.getCombineKey());
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping(value = "/setrepresentativeattribute")
+    public ResponseEntity<Void> setRepresentativeAttribute(@RequestBody SetRepresentativeAttributeRequest setRepresentativeAttributeRequest) throws Exception {
+        String query = "UPDATE meta_column SET representativeAttribute = " + setRepresentativeAttributeRequest.getRepresentativeAttribute() + " WHERE table_id = " + "'"+setRepresentativeAttributeRequest.getTableId() + "'" + ", name = " + "'"+setRepresentativeAttributeRequest.getColumnName()+ "'";
+        mariaConnector.queryExec(query);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping(value = "/setrepresentativecombinekey")
+    public ResponseEntity<Void> setRepresentativeCombineKey(@RequestBody SetRepresentativeCombineKeyRequest setRepresentativeCombineKeyRequest) throws Exception {
+        String query = "UPDATE meta_column SET representativeCombineKey = " + setRepresentativeCombineKeyRequest.getRepresentativeCombineKey() + " WHERE table_id = " + "'"+ setRepresentativeCombineKeyRequest.getTableId() + "'" + ", name = " + "'"+setRepresentativeCombineKeyRequest.getColumnName()+ "'";
+        mariaConnector.queryExec(query);
         return ResponseEntity.ok().build();
     }
 }
