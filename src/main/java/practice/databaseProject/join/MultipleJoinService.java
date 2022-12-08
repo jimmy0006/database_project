@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,15 +29,30 @@ public class MultipleJoinService {
     private List<String> table_names, table_columns;
     int completed;
 
+    class CustomThread extends Thread {
+
+        String query;
+        Integer index;
+
+        public CustomThread (String query,Integer index) {
+            this.query=query;
+            this.index=index;
+        }
+
+        public void run() {
+            mariaConnector.queryExec(query);
+            isComplete.set(index,true);
+        }
+    }
+
     public void multipleJoinQueryExecutor(List<String> queries) {
-        IntStream.range(0, queries.size())
-                .parallel()
-                .peek(i -> System.out.println(queries.get(i)))
-                .forEach(i -> {
-                    mariaConnector.queryExec(queries.get(i));
-                    isComplete.set(i, true);
-                });
-        System.out.println(getInfo());
+
+        for(Integer i=0;i<queries.size();++i) {
+            CustomThread temp= new CustomThread(queries.get(i),i);
+            temp.start();
+        }
+
+        System.out.println(isComplete.get(0));
 
     }
 
