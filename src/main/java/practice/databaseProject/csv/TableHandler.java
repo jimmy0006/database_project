@@ -28,19 +28,19 @@ public class TableHandler implements CSVHandler {
     }
 
     @Override
-    public boolean saveFile(MultipartFile file) {
+    public Path saveFile(MultipartFile file) {
         try {
             Files.createDirectories(localPathIn);
             Path fileName = Path.of(file.getOriginalFilename()).getFileName();
-            if(!fileName.endsWith(".csv")) return false;    // Will also catch dot-dot attack due to no extension
+            if(!fileName.endsWith(".csv")) return null;    // Will also catch dot-dot attack due to no extension
 
             Path dest = localPathIn.resolve(fileName);
-            if(Files.exists(dest)) return false;    // File already exists
+            if(Files.exists(dest)) return null;    // File already exists
             file.transferTo(dest);
-            return true;
+            return dest;
         } catch(Exception e) {
             e.printStackTrace(System.err);
-            return false;
+            return null;
         }
     }
 
@@ -55,8 +55,7 @@ public class TableHandler implements CSVHandler {
     }
 
     @Override
-    public boolean loadCSV(String filename) {
-        Path path = Path.of(filename);
+    public boolean loadCSV(Path path) {
         String tableName = path.getFileName().toString();
         String[] columns = columnFromCSV(path);
         if(columns == null) return false;
@@ -95,15 +94,16 @@ public class TableHandler implements CSVHandler {
     }
 
     @Override
-    public boolean exportCSV(String tableName) {
+    public Path exportCSV(String tableName) {
+        Path path = localPathOut.resolve(tableName);
         String exportQuery = String.join("\n",
                 String.format("SELECT * FROM %s", tableName),
-                String.format("INTO OUTFILE '%s.csv'", localPathOut.resolve(tableName)),
+                String.format("INTO OUTFILE '%s.csv'", path),
                 "FIELDS ENCLOSED BY '\"'",
                 "TERMINATED BY ';'",
                 "ESCAPED BY '\"'",
                 "LINES TERMINATED BY '\\r\\n';"
         );
-        return dbConn.queryExec(exportQuery);
+        return dbConn.queryExec(exportQuery) ? path : null;
     }
 }

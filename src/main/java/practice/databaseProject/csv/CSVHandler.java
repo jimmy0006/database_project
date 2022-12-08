@@ -9,7 +9,7 @@ public interface CSVHandler {
 
     public String[] columnFromCSV(Path path);
 
-    public boolean saveFile(MultipartFile file);
-    public boolean loadCSV(String filename);
-    public boolean exportCSV(String tableName);
+    public Path saveFile(MultipartFile file);
+    public boolean loadCSV(Path path);
+    public Path exportCSV(String tableName);
 }
