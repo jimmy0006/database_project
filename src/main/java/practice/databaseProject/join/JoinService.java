@@ -2,75 +2,42 @@ package practice.databaseProject.join;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import practice.databaseProject.dbConnector.DB_connector;
-import practice.databaseProject.dto.Keys;
-import practice.databaseProject.dto.TableCombine;
-import practice.databaseProject.dto.TableCombineResult;
+import practice.databaseProject.dbConnector.MariaConnector;
+import practice.databaseProject.dto.JoinResult;
 import practice.databaseProject.entity.SQLResult;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
 public class JoinService {
+    private final MariaConnector mariaConnector;
 
-    private final DB_connector db_connector;
 
-    public static void main(String[] args){
-        //테스트
-        TableCombine tableCombine = beforeJoin("1_fitness_measurement", "PHONE_NUM", "2_physical_instructor_practice_info", "TEL_NO", "phone");
-        System.out.println(tableCombine);
-        System.out.println(afterJoin("1_fitness_measurement","PHONE_NUM", tableCombine.getTable1_num(), "2_physical_instructor_practice_info","TEL_NO",tableCombine.getTable2_num()));
+    // 대표 결합키가 설정이 완료된 테이블 목록
+    // 테이블명 일부 또는 전체, 표준 결합키, 속성명을 입력하여 결합하고자 하는 테이블을 검색
+    public JoinResult innerJoin(String table1_name, String table1_column, String table2_name, String table2_column, String combined_column) throws ClassNotFoundException, SQLException {
+        String combined_name = table1_name + "_" + table2_name;
+        String join_query = "CREATE TABLE " + combined_name + " SELECT * from " + table1_name + " JOIN " + table2_name + " ON " + table1_name + "." + table1_column + " = " + table2_name + "." +table2_column;
+        mariaConnector.setUp("root", "1234", "localhost:3306/test");
+        mariaConnector.queryExec(join_query);
+
+        String table1_count_query = "SELECT COUNT(*) FROM " + table1_name;
+        String table2_count_query = "SELECT COUNT(*) FROM " + table2_name;
+        String combined_count_query = "SELECT COUNT(*) FROM " + combined_name;
+
+        int table1_num_records = Integer.parseInt(mariaConnector.queryFor(table1_count_query).getRow(0)[0]);
+        int table2_num_records = Integer.parseInt(mariaConnector.queryFor(table2_count_query).getRow(0)[0]);
+        int combined_num_records = Integer.parseInt(mariaConnector.queryFor(combined_count_query).getRow(0)[0]);
+
+        float table1_success_rate = (float) table1_num_records/combined_num_records;
+        float table2_success_rate = (float) table2_num_records/combined_num_records;
+
+        JoinResult joinResult = new JoinResult(table1_name, table2_name, combined_name, table1_num_records, table2_num_records, combined_num_records, table1_column, table2_column, combined_column, table1_success_rate, table2_success_rate, "완료");
+
+        return joinResult;
     }
 
-    //쿼리문 날리기 이전 해당 테이블의 레코드 수 조사
-    public static TableCombine beforeJoin(String table1, String column1, String table2, String column2,String combine_key){
-        TableCombine tableCombine = new TableCombine(table1,column1,table2,column2,combine_key);
-        try(DB_connector conn = new DB_connector("mariadb://127.0.0.1:3306/proj", "root", "root")) {
-            String[] testQueries = {
-                    "SELECT COUNT(*) as COUNT1 FROM "+table1+";",
-                    "SELECT COUNT(*) as COUNT2 FROM "+table2+";"
-            };
-            int[] queryResult=new int[2];
-            int i=0;
-            for(String query : testQueries) {
-                SQLResult res = conn.queryFor(query);
-                if(res == null) {
-                    System.out.println("Query Error");
-                    continue;
-                }
-                queryResult[i++]=Integer.parseInt(res.getRow(0)[0]);
-            }
-            tableCombine.setTable1_num(queryResult[0]);
-            tableCombine.setTable2_num(queryResult[1]);
-        } catch(SQLException e) {
-            e.printStackTrace(System.err);
-            System.out.println("Connection Error. Exiting...");
-            System.exit(1);
-        }
-        return tableCombine;
-    }
 
-    //join문 작성 후 실행, 결과 출력
-    public static TableCombineResult afterJoin(String table1, String column1,int table1_num, String table2, String column2,int table2_num){
-        TableCombineResult tableCombineResult = new TableCombineResult();
-        try(DB_connector conn = new DB_connector("mariadb://127.0.0.1:3306/proj", "root", "root")) {
-            // DB_connector는 try-with-resource로 생성된 후 exception이 발생하지 않음 -> null/false/-1 등의 값으로 오류 표시
-            String testQuery = "SELECT * from `proj`.`"+table1+"` inner join `proj`.`"+table2+"` on "+table1+"."+column1+" = "+table2+"."+column2;
-            SQLResult res = conn.queryFor(testQuery);
-            if(res == null) {
-                System.out.println("Query Error");
-            }
-            tableCombineResult.setResult_num(res.getRowCount());
-            tableCombineResult.setTable1_result((float)res.getRowCount()/table1_num);
-            tableCombineResult.setTable2_result((float)res.getRowCount()/table2_num);
-        }catch(SQLException e) {
-            e.printStackTrace(System.err);
-            System.out.println("Connection Error. Exiting...");
-            System.exit(1);
-        }
-        return tableCombineResult;
-    }
 
 }
