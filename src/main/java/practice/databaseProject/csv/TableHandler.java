@@ -68,7 +68,7 @@ public class TableHandler implements CSVHandler {
         if(!dbConn.queryExec(createQuery)) return false;
 
         String loadQuery = String.join("\n",
-                String.format("LOAD DATA LOCAL INFILE '%s'", path.toString()).replace("\\","/"),
+                String.format("LOAD DATA LOCAL INFILE '%s'", path.toString()).replace('\\','/'),
                 String.format("REPLACE INTO TABLE `%s`", tableName),
                 "CHARACTER SET utf8",
                 "COLUMNS TERMINATED BY ','",
@@ -78,19 +78,17 @@ public class TableHandler implements CSVHandler {
         );
         if(!dbConn.queryExec(loadQuery)) return false;
 
-        String registerTableQuery = String.format("INSERT INTO %s (name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
+        String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
         if(!dbConn.queryExec(registerTableQuery)) return false;
 
-        String idQuery = String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE.toString(), tableName);
-        SQLResult res = dbConn.queryFor(
-                idQuery
-        );
-        String tId = res.getRow(0)[0];
+        String tId = dbConn.queryFor(
+                String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE.toString(), tableName)
+        ).getRow(0)[0];
 
         String[] entryVals = new String[columns.length];
         for(int i = 0; i < entryVals.length; ++i) {
-            // (table id, column name, type, isCandidate) -> type = TEXT, isCandidate = false
-            entryVals[i] = String.format("(%s, '%s', '%s', %d)", tId, columns[i], SQLType.TEXT, 0);
+            // (table id, column name, type, nullCount, distinctCount) -> type = TEXT
+            entryVals[i] = String.format("(%s, '%s', '%s', %d, %d)", tId, columns[i], SQLType.TEXT, 0, 0);
         }
         String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", entryVals));
         return dbConn.queryExec(registerColumnsQuery);

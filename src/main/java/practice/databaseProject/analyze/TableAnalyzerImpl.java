@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import practice.databaseProject.dbConnector.DBConnector;
 import practice.databaseProject.editAttribute.EditAttribute;
 import practice.databaseProject.entity.SQLType;
+import practice.databaseProject.entity.SpecialTable;
 
 @Service
 @RequiredArgsConstructor
@@ -23,10 +24,11 @@ public class TableAnalyzerImpl implements TableAnalyzer {
         for(String col : columns) {
             String[] data = dbConn.queryFor(String.format("SELECT DISTINCT(%s) FROM %s;", col, table)).getCol(0);
             // data may be null if SQLException but is not handled... Could lead to NullPointerException
-            boolean isInteger = true, isReal = true, hasDecimal = false, hasNull = false;
+            boolean isInteger = true, isReal = true, hasDecimal = false;
+            int nullCount = 0;
             row: for(String e : data) {
                 if(e == null || "null".equalsIgnoreCase(e)) {
-                    hasNull = true;
+                    nullCount += 1;
                     continue;
                 }
                 for (int i = 0; i < e.length(); i++) {
@@ -53,7 +55,7 @@ public class TableAnalyzerImpl implements TableAnalyzer {
             }
 
             SQLType type = isInteger ? SQLType.INTEGER : isReal ? SQLType.DOUBLE : SQLType.TEXT;
-            result.setColumn(col, type, hasNull, data.length == nEntries);
+            result.setColumn(col, type, nullCount, data.length);
         }
 
         return result;
@@ -63,6 +65,12 @@ public class TableAnalyzerImpl implements TableAnalyzer {
     public boolean update(String table, AnalyzeResult info) {
         for(String column : info.getColumns()) {
             if(!tableEditor.cast(table, column, info.getType(column))) return false;
+            String id = dbConn.queryFor(String.format("SELECT id FROM '%s' WHERE table_name='%s'", SpecialTable.META_TABLE, table)).getRow(0)[0];
+            if(!dbConn.queryExec(String.format("UPDATE %s SET '%s'='%s', '%s'='%s' WHERE id='%s' and name='%s';", SpecialTable.META_COL,
+                    "nullCount", info.getNullCount(column),
+                    "distinctCount", info.getDistinctCount(column),
+                    id, column
+            ))) return false;
         }
         return true;
     }

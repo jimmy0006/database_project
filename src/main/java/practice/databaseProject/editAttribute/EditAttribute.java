@@ -45,7 +45,7 @@ public class EditAttribute {
 
     public boolean deleteAttribute(String table, String column){
         if(dbConnector.queryExec(String.format("ALTER TABLE `%s` DROP COLUMN `%s`;", table, column))){
-            String id = dbConnector.queryFor(String.format("SELECT id FROM `%s` WHERE table_name=\"%s\"", SpecialTable.META_TABLE, table)).getCol(0)[0];
+            String id = dbConnector.queryFor(String.format("SELECT id FROM `%s` WHERE table_name=\"%s\"", SpecialTable.META_TABLE, table)).getRow(0)[0];
             return dbConnector.queryExec(String.format("DELETE FROM `%s` WHERE id=\"%s\" AND name=\"%s\";",SpecialTable.META_COL,id,column));
         }
         return false;
