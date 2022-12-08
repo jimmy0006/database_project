@@ -10,6 +10,8 @@ public interface DBConnector extends AutoCloseable {
 
     public void setUp(String userName, String password, String address) throws ClassNotFoundException, SQLException;
 
+    public void getSetting(String userName,String password,String address) throws ClassNotFoundException, SQLException;
+
     public boolean queryExec(String qString);
     public SQLResult queryFor(String qString);
 }
