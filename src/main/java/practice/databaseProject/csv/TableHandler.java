@@ -82,7 +82,7 @@ public class TableHandler implements CSVHandler {
         if(!dbConn.queryExec(registerTableQuery)) return false;
 
         String tId = dbConn.queryFor(
-                String.format("SELECT id FROM %s WHERE `table_name`=`%s`;", SpecialTable.META_TABLE, tableName)
+                String.format("SELECT id FROM %s WHERE 'table_name'='%s';", SpecialTable.META_TABLE, tableName)
         ).getRow(0)[0];
 
         String[] entryVals = new String[columns.length];

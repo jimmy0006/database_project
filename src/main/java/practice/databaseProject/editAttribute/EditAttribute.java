@@ -37,7 +37,7 @@ public class EditAttribute {
     /** Column Info must be populated into meta_column */
     public boolean cast(String table, String column, SQLType type) {
         if(dbConnector.queryExec(String.format("ALTER TABLE `%s` MODIFY `%s` %s;", table, column, type))){
-            String index = dbConnector.queryFor(String.format("SELECT id FROM %s WHERE `table_name`=\"%s\";", SpecialTable.META_TABLE, table)).getRow(0)[0];
+            String index = dbConnector.queryFor(String.format("SELECT id FROM %s WHERE 'table_name'='%s';", SpecialTable.META_TABLE, table)).getRow(0)[0];
             return dbConnector.queryExec("UPDATE `meta_column` SET type=\"" + type + "\" WHERE id=" + index + " and name=\"" + column + "\";");
         }
         return false;
