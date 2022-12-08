@@ -21,7 +21,7 @@ class CSVReaderTest {
     void readCSV() throws SQLException, ClassNotFoundException {
         List<String> strings = csvReader.readCSV("1_Fitness_Measurement.csv");
         System.out.println(strings);
-        csvReader.DB_saver("1_Fitness_Measurement",strings);
+        csvReader.DB_saver("1_Fitness_Measurement.csv" );
     }
 
     @Test

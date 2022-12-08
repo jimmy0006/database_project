@@ -28,24 +28,25 @@ public class CSVReader {
     private static final String localPath = "C:/Users/jinmi/OneDrive/바탕 화면/개발자노트/git/database_project/csv/";
     private static final String localPathOut = "C:\\\\Users\\\\jinmi\\\\OneDrive\\\\바탕 화면\\\\개발자노트\\\\git\\\\database_project\\\\csv_output\\\\";
 
-    public boolean DB_saver(String tableName, List<String> lists) throws SQLException, ClassNotFoundException {
+    public boolean DB_saver(String fileName) throws SQLException, ClassNotFoundException {
         dbConnector.setUp("root", "1234", "localhost:3305/test");
+        List<String> lists = readCSV(fileName);
+        String tableName = fileName.substring(0,fileName.lastIndexOf("."));
         String query = "CREATE TABLE `test`.`" + tableName+"`(";
         for (String s : lists) {
             query+=s+" VARCHAR(100),";
         }
         query = query.substring(0, query.length() - 1)+");";
         dbConnector.queryFor(query);
-        SQLResult sqlResult = dbConnector.queryFor("LOAD DATA LOCAL INFILE '" + localPath + "1_Fitness_Measurement.csv'\n" +
+        return dbConnector.queryExec("LOAD DATA LOCAL INFILE '" + localPath + fileName+"'\n" +
                 "REPLACE\n" +
-                "INTO TABLE `test`.`1_Fitness_Measurement`\n" +
+                "INTO TABLE `test`.`"+tableName+"`\n" +
                 "CHARACTER SET utf8\n" +
                 "COLUMNS TERMINATED BY ','\n" +
                 "ENCLOSED BY '\"'\n" +
                 "LINES TERMINATED BY '\\n'\n"+
                 "IGNORE 1 LINES;"
         );
-        return true;
     }
 
     public boolean DBtoCSV(String tableName) throws SQLException, ClassNotFoundException {
@@ -110,6 +111,7 @@ public class CSVReader {
 //        // 파일이 이미 존재하는지 확인하여 존재한다면 오류를 발생하고 없다면 저장한다.
             Assert.state(!Files.exists(targetPath), fileName + " File alerdy exists.");
             file.transferTo(targetPath);
+            DB_saver(fileName);
             return true;
         }
         catch(Exception e){
