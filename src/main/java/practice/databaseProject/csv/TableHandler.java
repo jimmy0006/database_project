@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
+import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.entity.SpecialTable;
 
 import java.io.BufferedReader;
@@ -87,7 +88,7 @@ public class TableHandler implements CSVHandler {
         String[] entryVals = new String[columns.length];
         for(int i = 0; i < entryVals.length; ++i) {
             // (table id, column name, type, isCandidate) -> type = TEXT, isCandidate = false
-            entryVals[i] = String.format("(%s, '%s', '%s', %d)", tId, columns[i], "TEXT", 0);
+            entryVals[i] = String.format("(%s, '%s', '%s', %d)", tId, columns[i], SQLType.TEXT, 0);
         }
         String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", entryVals));
         return dbConn.queryExec(registerColumnsQuery);
