@@ -82,4 +82,9 @@ public class Controller {
         return ResponseEntity.ok(editAttribute.cast(request.getTable(), request.getColumn(), SQLType.valueOf(request.getType())));
     }
 
+    @DeleteMapping(value = "/editattribute")
+    public ResponseEntity<Boolean> deleteTableAttribute(@RequestBody DeleteAttributeRequestDto request){
+        return ResponseEntity.ok(editAttribute.deleteAttribute(request.getTable(), request.getColumn()));
+    }
+
 }
