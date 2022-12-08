@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.csv.CSVHandler;
 import practice.databaseProject.dbConnector.DBConnector;
-import practice.databaseProject.dbConnector.MariaConnector;
 import practice.databaseProject.dto.*;
 import practice.databaseProject.editAttribute.EditAttribute;
 import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.join.JoinService;
 import practice.databaseProject.join.MultipleJoinService;
-import practice.databaseProject.readCSV.CSVReader;
 
 import java.io.IOException;
 import java.nio.file.Path;

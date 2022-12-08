@@ -27,8 +27,8 @@ public class EditAttribute {
             TableInfo tableInfo = new TableInfo();
             String[] row = sqlResult.getRow(i);
             tableInfo.setName(row[1]);
-            tableInfo.setCount(Integer.parseInt(dbConnector.queryFor("SELECT COUNT(*) FROM "+row[1]+";").getCol(0)[0]));
-            tableInfo.setAttributes(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT name FROM meta_column where id=" + row[0] + ";").getCol(0))));
+            tableInfo.setCount(Integer.parseInt(dbConnector.queryFor("SELECT COUNT(*) FROM "+row[1]+";").getRow(0)[0]));
+            tableInfo.setAttributes(Arrays.asList(dbConnector.queryFor("SELECT name FROM meta_column where id=" + row[0] + ";").getCol(0)));
             result.add(tableInfo);
         }
         return result;
