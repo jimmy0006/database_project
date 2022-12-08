@@ -26,7 +26,10 @@ public class MariaConnector implements DBConnector {
                 "  `table_id` int(10) unsigned NOT NULL,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
-                "  `isCandidate` tinyint(3) unsigned NOT NULL DEFAULT 0,\n" +
+                "  `nullCount` int(10) unsigned NOT NULL DEFAULT 0,\n" +
+                "  `distinctCount` int(10) unsigned NOT NULL DEFAULT 0,\n" +
+                "  `representativeAttribute` varchar(50) DEFAULT NULL,\n" +
+                "  `representativeCombineKey` varchar(50) DEFAULT NULL,\n" +
                 "  PRIMARY KEY (`table_id`,`name`),\n" +
                 "  KEY `table_id` (`table_id`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;");
