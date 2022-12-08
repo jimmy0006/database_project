@@ -21,9 +21,8 @@ public class EditAttribute {
     private final MariaConnector dbConnector;
 
     public List<TableInfo> Editable() throws SQLException, ClassNotFoundException {
-        dbConnector.setUp("root", "1234", "localhost:3305/test");
         List<TableInfo> result = new ArrayList<>();
-        SQLResult sqlResult = dbConnector.queryFor("SELECT id,table_name FROM test.meta_table;");
+        SQLResult sqlResult = dbConnector.queryFor("SELECT id,table_name FROM meta_table;");
         List<List<String>> temp = new ArrayList<>();
         int rowCount = sqlResult.getRowCount();
         for (int i = 0; i < rowCount; i++) {
@@ -34,20 +33,19 @@ public class EditAttribute {
         for (List<String> tableName : temp) {
             TableInfo tableInfo = new TableInfo();
 //            editableTable.setCount(dbConnector.queryFor("SELECT COUNT(*) FROM test."+tableName.get(1)+";")[0][0]);
-            System.out.println(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT COUNT(*) FROM test."+tableName.get(1)+";").getCol(0))));
-            System.out.println(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT name FROM test.meta_column where id="+tableName.get(0)+";").getCol(0))));
+            System.out.println(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT COUNT(*) FROM "+tableName.get(1)+";").getCol(0))));
+            System.out.println(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT name FROM meta_column where id="+tableName.get(0)+";").getCol(0))));
         }
-        SQLResult records = dbConnector.queryFor("SELECT id,table_name FROM test.meta_table;");
+        SQLResult records = dbConnector.queryFor("SELECT id,table_name FROM meta_table;");
 
         return result;
     }
 
     public boolean cast(String table, String column, SQLType type) throws ClassNotFoundException, SQLException {
-        dbConnector.setUp("root", "1234", "localhost:3305/test");
-        boolean b = dbConnector.queryExec("ALTER TABLE `test`.`" + table + "` MODIFY `" + column + "` " + type + ";");
+        boolean b = dbConnector.queryExec("ALTER TABLE `" + table + "` MODIFY `" + column + "` " + type + ";");
         if(b){
-            String index = dbConnector.queryFor("SELECT id FROM `test`.`meta_table` WHERE `table_name`=\"" + table + "\";").getCol(0)[0];
-            return dbConnector.queryExec("UPDATE `test`.`meta_column` SET type=\"" + type + "\" WHERE id=" + index + " and name=\"" + column + "\";");
+            String index = dbConnector.queryFor("SELECT id FROM `meta_table` WHERE `table_name`=\"" + table + "\";").getCol(0)[0];
+            return dbConnector.queryExec("UPDATE `meta_column` SET type=\"" + type + "\" WHERE id=" + index + " and name=\"" + column + "\";");
         }
         return false;
     }

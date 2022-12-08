@@ -29,10 +29,9 @@ public class CSVReader {
     private static final String localPathOut = "C:\\\\Users\\\\jinmi\\\\OneDrive\\\\바탕 화면\\\\개발자노트\\\\git\\\\database_project\\\\csv_output\\\\";
 
     public boolean DB_saver(String fileName) throws SQLException, ClassNotFoundException {
-        dbConnector.setUp("root", "1234", "localhost:3305/test");
         List<String> lists = readCSV(fileName);
         String tableName = fileName.substring(0,fileName.lastIndexOf("."));
-        String query = "CREATE TABLE `test`.`" + tableName+"`(";
+        String query = "CREATE TABLE `" + tableName+"`(";
         for (String s : lists) {
             query+=s+" TEXT,";
         }
@@ -40,7 +39,7 @@ public class CSVReader {
         dbConnector.queryFor(query);
         return dbConnector.queryExec("LOAD DATA LOCAL INFILE '" + localPath + fileName+"'\n" +
                 "REPLACE\n" +
-                "INTO TABLE `test`.`"+tableName+"`\n" +
+                "INTO TABLE `"+tableName+"`\n" +
                 "CHARACTER SET utf8\n" +
                 "COLUMNS TERMINATED BY ','\n" +
                 "ENCLOSED BY '\"'\n" +
@@ -50,9 +49,8 @@ public class CSVReader {
     }
 
     public boolean DBtoCSV(String tableName) throws SQLException, ClassNotFoundException {
-        dbConnector.setUp("root", "1234", "localhost:3305/test");
         System.out.println(localPathOut);
-        dbConnector.queryExec("SELECT * FROM test."+tableName+"\n" +
+        dbConnector.queryExec("SELECT * FROM "+tableName+"\n" +
                 "INTO OUTFILE '"+localPathOut+tableName+".csv'\n" +
                 "FIELDS ENCLOSED BY '\"'\n" +
                 "TERMINATED BY ';'\n" +
