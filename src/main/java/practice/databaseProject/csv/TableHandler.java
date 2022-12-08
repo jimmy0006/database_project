@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
+import practice.databaseProject.entity.SQLResult;
 import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.entity.SpecialTable;
 
@@ -32,8 +33,7 @@ public class TableHandler implements CSVHandler {
         try {
             Files.createDirectories(localPathIn);
             Path fileName = Path.of(file.getOriginalFilename()).getFileName();
-            if(!fileName.endsWith(".csv")) return null;    // Will also catch dot-dot attack due to no extension
-
+            if(!file.getOriginalFilename().endsWith(".csv")) return null;    // Will also catch dot-dot attack due to no extension
             Path dest = localPathIn.resolve(fileName);
             if(Files.exists(dest)) return null;    // File already exists
             file.transferTo(dest);
@@ -56,18 +56,19 @@ public class TableHandler implements CSVHandler {
 
     @Override
     public boolean loadCSV(Path path) {
-        String tableName = path.getFileName().toString();
+        String tableName = path.getFileName().toString().substring(0,path.getFileName().toString().lastIndexOf("."));
         String[] columns = columnFromCSV(path);
         if(columns == null) return false;
 
-        String createQuery = String.format("CREATE TABLE %s(%s);",
-                tableName,
-                String.join(", ", Collections.nCopies(columns.length, "TEXT")
-        ));
+        String createQuery = "CREATE TABLE `" + tableName+"`(";
+        for (String s : columns) {
+            createQuery+=s+" TEXT,";
+        }
+        createQuery = createQuery.substring(0, createQuery.length() - 1)+");";
         if(!dbConn.queryExec(createQuery)) return false;
 
         String loadQuery = String.join("\n",
-                String.format("LOAD DATA LOCAL INFILE `%s`", localPathIn.resolve(path)),
+                String.format("LOAD DATA LOCAL INFILE '%s'", path.toString()).replace("\\","/"),
                 String.format("REPLACE INTO TABLE `%s`", tableName),
                 "CHARACTER SET utf8",
                 "COLUMNS TERMINATED BY ','",
@@ -77,12 +78,14 @@ public class TableHandler implements CSVHandler {
         );
         if(!dbConn.queryExec(loadQuery)) return false;
 
-        String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s')", SpecialTable.META_TABLE, tableName);
+        String registerTableQuery = String.format("INSERT INTO %s (name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
         if(!dbConn.queryExec(registerTableQuery)) return false;
 
-        String tId = dbConn.queryFor(
-                String.format("SELECT id FROM %s WHERE 'table_name'='%s';", SpecialTable.META_TABLE, tableName)
-        ).getRow(0)[0];
+        String idQuery = String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE.toString(), tableName);
+        SQLResult res = dbConn.queryFor(
+                idQuery
+        );
+        String tId = res.getRow(0)[0];
 
         String[] entryVals = new String[columns.length];
         for(int i = 0; i < entryVals.length; ++i) {

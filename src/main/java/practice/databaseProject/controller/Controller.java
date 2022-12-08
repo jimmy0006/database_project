@@ -1,6 +1,7 @@
 package practice.databaseProject.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,9 @@ import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.join.JoinService;
 import practice.databaseProject.join.MultipleJoinService;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -50,7 +53,8 @@ public class Controller {
         return ResponseEntity.ok(dbConnectionResponse);
     }
     @PostMapping(value = "/csv", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Boolean> readCSV(MultipartFile file) {
+    public ResponseEntity<Boolean> readCSV(MultipartFile file) throws IOException {
+        csvReader.setLocalPath("C:\\Users\\jinmi\\OneDrive\\바탕 화면\\개발자노트\\git\\database_project\\csv\\","C:\\Users\\jinmi\\OneDrive\\바탕 화면\\개발자노트\\git\\database_project\\csv_output");
         Path path = csvReader.saveFile(file);
         boolean b = false;
         if(path != null) b = csvReader.loadCSV(path);
