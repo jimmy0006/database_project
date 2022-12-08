@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.csv.CSVHandler;
 import practice.databaseProject.dbConnector.DBConnector;
+import practice.databaseProject.dictionary.StandardCombineKeyDictionary;
+import practice.databaseProject.dictionary.StandardRepresentativeAttributeDictionary;
 import practice.databaseProject.dto.*;
 import practice.databaseProject.editAttribute.EditAttribute;
 import practice.databaseProject.entity.SQLType;
@@ -28,9 +30,13 @@ public class Controller {
     private final MultipleJoinService multipleJoinService;
     private final DBConnector mariaConnector;
     private final EditAttribute editAttribute;
+    private final StandardRepresentativeAttributeDictionary standardRepresentativeAttributeDictionary;
+    private final StandardCombineKeyDictionary standardCombineKeyDictionary;
 
     @PostMapping(value = "/dbconnect")
     public ResponseEntity<DBConnectionResponse> dbConnect(@RequestBody DBConnectionRequest dbConnectionRequest) {
+        standardRepresentativeAttributeDictionary.init();
+        standardCombineKeyDictionary.init();
         String host = dbConnectionRequest.getHost();
         String port = dbConnectionRequest.getPort();
         String database = dbConnectionRequest.getDatabase();
@@ -88,5 +94,22 @@ public class Controller {
     public ResponseEntity<Boolean> deleteTableAttribute(@RequestBody DeleteAttributeRequestDto request){
         return ResponseEntity.ok(editAttribute.deleteAttribute(request.getTable(), request.getColumn()));
     }
-
+    @PostMapping(value = "/getrepresentativeattributes")
+    public ResponseEntity<List<String>> getRepresentativeAttributes() throws Exception {
+        return ResponseEntity.ok(standardRepresentativeAttributeDictionary.values());
+    }
+    @PostMapping(value = "/getcombinekeys")
+    public ResponseEntity<List<String>> getCombineKeys() throws Exception {
+        return ResponseEntity.ok(standardCombineKeyDictionary.values());
+    }
+    @PostMapping(value = "/addrepresentativeattribute")
+    public ResponseEntity<Void> addRepresentativeAttribute(@RequestBody AddRepresentativeAttributeRequest addRepresentativeAttributeRequest) throws Exception {
+        standardRepresentativeAttributeDictionary.add(addRepresentativeAttributeRequest.getAttribute());
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping(value = "/addcombinekey")
+    public ResponseEntity<Void> addCombineKey(@RequestBody AddCombineKeyRequest addCombineKeyRequest) throws Exception {
+        standardCombineKeyDictionary.add(addCombineKeyRequest.getCombineKey());
+        return ResponseEntity.ok().build();
+    }
 }
