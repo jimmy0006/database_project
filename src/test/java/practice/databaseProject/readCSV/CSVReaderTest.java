@@ -1,8 +1,10 @@
 package practice.databaseProject.readCSV;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import practice.databaseProject.dbConnector.MariaConnector;
 import practice.databaseProject.join.JoinService;
 import practice.databaseProject.join.MultipleJoinService;
 
@@ -16,7 +18,13 @@ class CSVReaderTest {
 
     @Autowired
     CSVReader csvReader;
+    @Autowired
+    MariaConnector mariaConnector;
 
+    @BeforeEach
+    void beforeEach() throws SQLException, ClassNotFoundException {
+        mariaConnector.setUp("root", "1234", "localhost:3305/test");
+    }
     @Test
     void readCSV() throws SQLException, ClassNotFoundException {
         List<String> strings = csvReader.readCSV("1_Fitness_Measurement.csv");
