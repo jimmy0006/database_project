@@ -65,8 +65,8 @@ public class TableAnalyzerImpl implements TableAnalyzer {
     public boolean update(String table, AnalyzeResult info) {
         for(String column : info.getColumns()) {
             if(!tableEditor.cast(table, column, info.getType(column))) return false;
-            String id = dbConn.queryFor(String.format("SELECT id FROM '%s' WHERE table_name='%s'", SpecialTable.META_TABLE, table)).getRow(0)[0];
-            if(!dbConn.queryExec(String.format("UPDATE %s SET '%s'='%s', '%s'='%s' WHERE id='%s' and name='%s';", SpecialTable.META_COL,
+            String id = dbConn.queryFor(String.format("SELECT id FROM '%s' WHERE name='%s'", SpecialTable.META_TABLE, table)).getRow(0)[0];
+            if(!dbConn.queryExec(String.format("UPDATE %s SET '%s'='%s', '%s'='%s' WHERE table_id='%s' and name='%s';", SpecialTable.META_COL,
                     "nullCount", info.getNullCount(column),
                     "distinctCount", info.getDistinctCount(column),
                     id, column
