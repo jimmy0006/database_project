@@ -20,7 +20,7 @@ public class EditAttribute {
     @Autowired
     private final MariaConnector dbConnector;
 
-    public List<TableInfo> Editable() throws SQLException, ClassNotFoundException {
+    public List<TableInfo> Editable() {
         List<TableInfo> result = new ArrayList<>();
         SQLResult sqlResult = dbConnector.queryFor("SELECT id,table_name FROM meta_table;");
         List<List<String>> temp = new ArrayList<>();
@@ -41,9 +41,9 @@ public class EditAttribute {
         return result;
     }
 
-    public boolean cast(String table, String column, SQLType type) throws ClassNotFoundException, SQLException {
-        boolean b = dbConnector.queryExec("ALTER TABLE `" + table + "` MODIFY `" + column + "` " + type + ";");
-        if(b){
+    /** Column Info must be populated into meta_column */
+    public boolean cast(String table, String column, SQLType type) {
+        if(dbConnector.queryExec(String.format("ALTER TABLE `%s` MODIFY `%s` %s;", table, column, type))){
             String index = dbConnector.queryFor("SELECT id FROM `meta_table` WHERE `table_name`=\"" + table + "\";").getCol(0)[0];
             return dbConnector.queryExec("UPDATE `meta_column` SET type=\"" + type + "\" WHERE id=" + index + " and name=\"" + column + "\";");
         }
