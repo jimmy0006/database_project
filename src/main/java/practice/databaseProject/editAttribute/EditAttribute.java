@@ -7,6 +7,7 @@ import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.dbConnector.MariaConnector;
 import practice.databaseProject.dto.TableInfo;
 import practice.databaseProject.entity.SQLResult;
+import practice.databaseProject.entity.SpecialTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +43,7 @@ public class EditAttribute {
     /** Column Info must be populated into meta_column */
     public boolean cast(String table, String column, SQLType type) {
         if(dbConnector.queryExec(String.format("ALTER TABLE `%s` MODIFY `%s` %s;", table, column, type))){
-            String index = dbConnector.queryFor("SELECT id FROM `meta_table` WHERE `table_name`=\"" + table + "\";").getCol(0)[0];
+            String index = dbConnector.queryFor(String.format("SELECT id FROM %s WHERE `table_name`=`%s`;", SpecialTable.META_TABLE, table)).getRow(0)[0];
             return dbConnector.queryExec("UPDATE `meta_column` SET type=\"" + type + "\" WHERE id=" + index + " and name=\"" + column + "\";");
         }
         return false;

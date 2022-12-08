@@ -62,7 +62,7 @@ public class TableAnalyzerImpl implements TableAnalyzer {
     @Override
     public boolean update(String table, AnalyzeResult info) {
         for(String column : info.getColumns()) {
-            tableEditor.cast(table, column, info.getType(column));
+            if(!tableEditor.cast(table, column, info.getType(column))) return false;
         }
         return true;
     }

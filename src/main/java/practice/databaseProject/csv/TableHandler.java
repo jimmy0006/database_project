@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
+import practice.databaseProject.entity.SpecialTable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,8 +64,7 @@ public class TableHandler implements CSVHandler {
                 tableName,
                 String.join(", ", Collections.nCopies(columns.length, "TEXT")
         ));
-        boolean createRes = dbConn.queryExec(createQuery);
-        if(!createRes) return false;
+        if(!dbConn.queryExec(createQuery)) return false;
 
         String loadQuery = String.join("\n",
                 String.format("LOAD DATA LOCAL INFILE `%s`", localPathIn.resolve(path)),
@@ -75,7 +75,22 @@ public class TableHandler implements CSVHandler {
                 "LINES TERMINATED BY '\\n'",
                 "IGNORE 1 LINES;"
         );
-        return dbConn.queryExec(loadQuery);
+        if(!dbConn.queryExec(loadQuery)) return false;
+
+        String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s')", SpecialTable.META_TABLE, tableName);
+        if(!dbConn.queryExec(registerTableQuery)) return false;
+
+        String tId = dbConn.queryFor(
+                String.format("SELECT id FROM %s WHERE `table_name`=`%s`;", SpecialTable.META_TABLE, tableName)
+        ).getRow(0)[0];
+
+        String[] entryVals = new String[columns.length];
+        for(int i = 0; i < entryVals.length; ++i) {
+            // (table id, column name, type, isCandidate) -> type = TEXT, isCandidate = false
+            entryVals[i] = String.format("(%s, '%s', '%s', %d)", tId, columns[i], "TEXT", 0);
+        }
+        String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", entryVals));
+        return dbConn.queryExec(registerColumnsQuery);
     }
 
     @Override
