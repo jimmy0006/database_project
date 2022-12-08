@@ -19,9 +19,7 @@ public class JoinService {
 
     // 대표 결합키가 설정이 완료된 테이블 목록
     // 테이블명 일부 또는 전체, 표준 결합키, 속성명을 입력하여 결합하고자 하는 테이블을 검색
-    public void innerJoin(String table_name, String table_column, List<String> table_names, List<String> table_columns, String combined_column) throws ClassNotFoundException, SQLException {
-        mariaConnector.setUp("root", "1234", "localhost:3306/test");
-
+    public void innerJoin(String table_name, String table_column, List<String> table_names, List<String> table_columns, String combined_column) {
         multipleJoinService.initialize(table_name, table_column, table_names, table_columns, combined_column);
         List<String> queries = new ArrayList<>();
         for (int i = 0; i < table_names.size(); ++i) {
