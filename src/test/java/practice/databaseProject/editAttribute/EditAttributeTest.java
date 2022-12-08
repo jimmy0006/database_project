@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.dbConnector.MariaConnector;
+import practice.databaseProject.dto.TableInfo;
 
 import java.sql.SQLException;
+import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class EditAttributeTest {
@@ -24,8 +26,12 @@ class EditAttributeTest {
     }
 
     @Test
-    void editable() throws SQLException, ClassNotFoundException {
-        editAttribute.Editable();
+    void editable(){
+        List<TableInfo> editable = editAttribute.Editable();
+        for (TableInfo tableInfo : editable) {
+            System.out.println(tableInfo.getCount());
+            System.out.println(tableInfo.getAttributes().toString());
+        }
     }
 
     @Test

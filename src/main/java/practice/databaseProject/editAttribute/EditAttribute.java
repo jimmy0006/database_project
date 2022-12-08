@@ -22,28 +22,22 @@ public class EditAttribute {
     public List<TableInfo> Editable() {
         List<TableInfo> result = new ArrayList<>();
         SQLResult sqlResult = dbConnector.queryFor("SELECT id,table_name FROM meta_table;");
-        List<List<String>> temp = new ArrayList<>();
         int rowCount = sqlResult.getRowCount();
         for (int i = 0; i < rowCount; i++) {
-            temp.add(Arrays.asList(sqlResult.getRow(i)));
-        }
-//        ArrayList<String> name = new ArrayList(Arrays.asList(sqlResult.getCol(1)));
-
-        for (List<String> tableName : temp) {
             TableInfo tableInfo = new TableInfo();
-//            editableTable.setCount(dbConnector.queryFor("SELECT COUNT(*) FROM test."+tableName.get(1)+";")[0][0]);
-            System.out.println(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT COUNT(*) FROM "+tableName.get(1)+";").getCol(0))));
-            System.out.println(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT name FROM meta_column where id="+tableName.get(0)+";").getCol(0))));
+            String[] row = sqlResult.getRow(i);
+            tableInfo.setName(row[1]);
+            tableInfo.setCount(Integer.parseInt(dbConnector.queryFor("SELECT COUNT(*) FROM "+row[1]+";").getCol(0)[0]));
+            tableInfo.setAttributes(new ArrayList(Arrays.asList(dbConnector.queryFor("SELECT name FROM meta_column where id=" + row[0] + ";").getCol(0))));
+            result.add(tableInfo);
         }
-        SQLResult records = dbConnector.queryFor("SELECT id,table_name FROM meta_table;");
-
         return result;
     }
 
     /** Column Info must be populated into meta_column */
     public boolean cast(String table, String column, SQLType type) {
         if(dbConnector.queryExec(String.format("ALTER TABLE `%s` MODIFY `%s` %s;", table, column, type))){
-            String index = dbConnector.queryFor(String.format("SELECT id FROM %s WHERE `table_name`=`%s`;", SpecialTable.META_TABLE, table)).getRow(0)[0];
+            String index = dbConnector.queryFor(String.format("SELECT id FROM %s WHERE `table_name`=\"%s\";", SpecialTable.META_TABLE, table)).getRow(0)[0];
             return dbConnector.queryExec("UPDATE `meta_column` SET type=\"" + type + "\" WHERE id=" + index + " and name=\"" + column + "\";");
         }
         return false;
