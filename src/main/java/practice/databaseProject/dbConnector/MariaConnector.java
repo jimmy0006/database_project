@@ -9,6 +9,7 @@ import java.sql.*;
 public class MariaConnector implements DBConnector {
     private Connection dbConn;
 
+    @Override
     public void setUp(String userName, String password, String address) throws ClassNotFoundException, SQLException {
         Class.forName("org.mariadb.jdbc.Driver");
         dbConn = DriverManager.getConnection(
