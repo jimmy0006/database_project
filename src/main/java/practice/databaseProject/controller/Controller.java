@@ -53,7 +53,7 @@ public class Controller {
         return ResponseEntity.ok(dbConnectionResponse);
     }
     @PostMapping(value = "/csv", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Boolean> readCSV(MultipartFile file) throws IOException {
+    public ResponseEntity<Boolean> readCSV(MultipartFile file) {
         Path path = csvReader.saveFile(file);
         boolean b = false;
         if(path != null) b = csvReader.loadCSV(path);
@@ -73,7 +73,7 @@ public class Controller {
     }
 
     @PostMapping(value = "/getjoinedtable")
-    public ResponseEntity<GetJoinedTableResponse> getJoinedTable() throws Exception {
+    public ResponseEntity<GetJoinedTableResponse> getJoinedTable() {
         List<JoinResult> joinResults = multipleJoinService.getInfo();
         GetJoinedTableResponse getJoinedTableResponse = new GetJoinedTableResponse(joinResults);
         return ResponseEntity.ok(getJoinedTableResponse);
