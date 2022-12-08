@@ -1,14 +1,18 @@
 package practice.databaseProject.dto;
 
+import lombok.Data;
+
+@Data
 public class JoinResult {
     private String table1_name, table2_name, combined_name;
-    private int table1_num_records, table2_num_records, combined_num_records;
+    private int table1_num_records, table2_num_records, combined_num_records, num_to_be_joined, num_completed;
     private String table1_combine_key, table2_combine_key, combine_key;
     private float table1_success_rate, table2_success_rate;
     private String completion;
 
 
-    public JoinResult(String table1_name, String table2_name, String combined_name, int table1_num_records, int table2_num_records, int combined_num_records, String table1_combine_key, String table2_combine_key, String combine_key, float table1_success_rate, float table2_success_rate, String completion) {
+
+    public JoinResult(String table1_name, String table2_name, String combined_name, int table1_num_records, int table2_num_records, int combined_num_records, String table1_combine_key, String table2_combine_key, String combine_key, float table1_success_rate, float table2_success_rate, String completion, int num_to_be_joined, int num_completed) {
         this.table1_name = table1_name;
         this.table2_name = table2_name;
         this.combined_name = combined_name;
@@ -21,6 +25,8 @@ public class JoinResult {
         this.table1_success_rate = table1_success_rate;
         this.table2_success_rate = table2_success_rate;
         this.completion = completion;
+        this.num_to_be_joined = num_to_be_joined;
+        this.num_completed = num_completed;
     }
 
 
