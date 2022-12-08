@@ -3,10 +3,12 @@ package practice.databaseProject.editAttribute;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import practice.databaseProject.analyze.SQLType;
 import practice.databaseProject.dbConnector.MariaConnector;
 import practice.databaseProject.dto.TableInfo;
 import practice.databaseProject.entity.SQLResult;
 
+import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,4 +42,13 @@ public class EditAttribute {
         return result;
     }
 
+    public boolean cast(String table, String column, SQLType type) throws ClassNotFoundException, SQLException {
+        dbConnector.setUp("root", "1234", "localhost:3305/test");
+        boolean b = dbConnector.queryExec("ALTER TABLE `test`.`" + table + "` MODIFY `" + column + "` " + type + ";");
+        if(b){
+            String index = dbConnector.queryFor("SELECT id FROM `test`.`meta_table` WHERE `table_name`=\"" + table + "\";").getCol(0)[0];
+            return dbConnector.queryExec("UPDATE `test`.`meta_column` SET type=\"" + type + "\" WHERE id=" + index + " and name=\"" + column + "\";");
+        }
+        return false;
+    }
 }

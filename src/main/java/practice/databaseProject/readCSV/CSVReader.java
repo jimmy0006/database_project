@@ -34,7 +34,7 @@ public class CSVReader {
         String tableName = fileName.substring(0,fileName.lastIndexOf("."));
         String query = "CREATE TABLE `test`.`" + tableName+"`(";
         for (String s : lists) {
-            query+=s+" VARCHAR(100),";
+            query+=s+" TEXT,";
         }
         query = query.substring(0, query.length() - 1)+");";
         dbConnector.queryFor(query);
