@@ -1,4 +1,4 @@
-package practice.databaseProject.analyze;
+package practice.databaseProject.entity;
 
 public enum SQLType {
     ERROR,

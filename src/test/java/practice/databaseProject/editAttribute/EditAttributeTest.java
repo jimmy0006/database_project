@@ -1,16 +1,13 @@
 package practice.databaseProject.editAttribute;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import practice.databaseProject.analyze.SQLType;
+import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.dbConnector.MariaConnector;
 
 import java.sql.SQLException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class EditAttributeTest {

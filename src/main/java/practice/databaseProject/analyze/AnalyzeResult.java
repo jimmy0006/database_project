@@ -1,5 +1,7 @@
 package practice.databaseProject.analyze;
 
+import practice.databaseProject.entity.SQLType;
+
 import java.util.*;
 
 public class AnalyzeResult {
@@ -25,6 +27,8 @@ public class AnalyzeResult {
     }
 
     public boolean contains(String column) {return metaData.containsKey(column);}
+
+    public String[] getColumns() {return metaData.keySet().toArray(String[]::new);}
 
     public SQLType getType(String column) {return (SQLType) metaData.get(column)[0];}
 

@@ -17,12 +17,12 @@ public class Main {
     public static void main(String[] args) {
         try(MariaConnector dbConn = new MariaConnector()) {
             dbConn.setUp("root", "root", "127.0.0.1:3306/proj");
-            test2(dbConn);
+            // test2(dbConn);
         } catch(Exception e) {
             e.printStackTrace(System.err);
         }
     }
-
+    /*
     public static void test1(MariaConnector dbConn) {
         printSQL(dbConn.queryFor("SELECT DISTINCT(PRCTTQ_PSEXAM_FLAG_NM) FROM 2_physical_instructor_practice_info;"));
     }
@@ -36,4 +36,5 @@ public class Main {
             System.out.printf("%20s: %10s,\t%b,\t\t%b\n", col, res.getType(col), res.isNullable(col), res.isDistinct(col));
         }
     }
+    */
 }

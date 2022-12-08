@@ -1,17 +1,18 @@
 package practice.databaseProject.analyze;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import practice.databaseProject.dbConnector.DBConnector;
-import practice.databaseProject.entity.SQLResult;
+import practice.databaseProject.editAttribute.EditAttribute;
+import practice.databaseProject.entity.SQLType;
 
 @Service
+@RequiredArgsConstructor
 public class TableAnalyzerImpl implements TableAnalyzer {
-    DBConnector dbConn;
+    private final DBConnector dbConn;
+    private final EditAttribute tableEditor;
 
-    public TableAnalyzerImpl(DBConnector dbConn) {
-        this.dbConn = dbConn;
-    }
-
+    /** Expects @param columns to be in order of table schema */
     @Override
     public AnalyzeResult analyze(String table, String[] columns) {
         int nEntries = Integer.parseInt(dbConn.queryFor(
@@ -21,6 +22,7 @@ public class TableAnalyzerImpl implements TableAnalyzer {
 
         for(String col : columns) {
             String[] data = dbConn.queryFor(String.format("SELECT DISTINCT(%s) FROM %s;", col, table)).getCol(0);
+            // data may be null if SQLException but is not handled... Could lead to NullPointerException
             boolean isInteger = true, isReal = true, hasDecimal = false, hasNull = false;
             row: for(String e : data) {
                 if(e == null || "null".equalsIgnoreCase(e)) {
@@ -55,5 +57,13 @@ public class TableAnalyzerImpl implements TableAnalyzer {
         }
 
         return result;
+    }
+
+    @Override
+    public boolean update(String table, AnalyzeResult info) {
+        for(String column : info.getColumns()) {
+            tableEditor.cast(table, column, info.getType(column));
+        }
+        return true;
     }
 }

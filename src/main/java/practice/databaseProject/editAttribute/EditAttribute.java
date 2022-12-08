@@ -3,13 +3,11 @@ package practice.databaseProject.editAttribute;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import practice.databaseProject.analyze.SQLType;
+import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.dbConnector.MariaConnector;
 import practice.databaseProject.dto.TableInfo;
 import practice.databaseProject.entity.SQLResult;
 
-import java.sql.Array;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
