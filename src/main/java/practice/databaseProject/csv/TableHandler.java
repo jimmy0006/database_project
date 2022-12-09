@@ -87,8 +87,8 @@ public class TableHandler implements CSVHandler {
 
         String[] entryVals = new String[columns.length];
         for(int i = 0; i < entryVals.length; ++i) {
-            // (table id, column name, type, nullCount, distinctCount) -> type = TEXT
-            entryVals[i] = String.format("(%s, '%s', '%s', 0, 0, null, null)", tId, columns[i], SQLType.TEXT.toString());
+            // (table id, column name, type) -> type = TEXT
+            entryVals[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], SQLType.TEXT.toString());
         }
         String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", entryVals));
         return dbConn.queryExec(registerColumnsQuery);
