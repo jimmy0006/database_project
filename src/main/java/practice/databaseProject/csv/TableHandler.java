@@ -1,14 +1,19 @@
 package practice.databaseProject.csv;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItem;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
 import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.entity.SpecialTable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -17,14 +22,8 @@ import java.nio.file.Path;
 public class TableHandler implements CSVHandler {
     private final DBConnector dbConn;
 
-    private Path localPathIn;
-    private Path localPathOut;
-
-    @Override
-    public void setLocalPath(String localPathIn, String localPathOut) {
-        this.localPathIn = Path.of(localPathIn).toAbsolutePath().normalize();
-        this.localPathOut = Path.of(localPathOut).toAbsolutePath().normalize();
-    }
+    private Path localPathIn = Path.of(".\\csv\\").toAbsolutePath().normalize();
+    private Path localPathOut = Path.of("C:\\Program Files\\MariaDB 10.6\\data\\result\\").toAbsolutePath().normalize();
 
     @Override
     public Path saveFile(MultipartFile file) {
@@ -92,17 +91,24 @@ public class TableHandler implements CSVHandler {
         return dbConn.queryExec(registerColumnsQuery);
     }
 
-    @Override
-    public Path exportCSV(String tableName) {
+    public File exportCSV(String tableName) throws IOException {
+       if(saveAsCSV(tableName)) {
+           return new File(localPathOut.resolve(tableName+".csv").toString());
+       }
+       return null;
+    }
+
+    public boolean saveAsCSV(String tableName) throws IOException {
+        Files.createDirectories(localPathOut);
         Path path = localPathOut.resolve(tableName);
         String exportQuery = String.join("\n",
                 String.format("SELECT * FROM %s", tableName),
-                String.format("INTO OUTFILE '%s.csv'", path),
+                String.format("INTO OUTFILE '%s.csv'", path.toString()).replace("\\","/"),
                 "FIELDS ENCLOSED BY '\"'",
                 "TERMINATED BY ';'",
                 "ESCAPED BY '\"'",
                 "LINES TERMINATED BY '\\r\\n';"
         );
-        return dbConn.queryExec(exportQuery) ? path : null;
+        return dbConn.queryExec(exportQuery);
     }
 }

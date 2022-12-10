@@ -1,6 +1,7 @@
 package practice.databaseProject.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import practice.databaseProject.join.MultipleJoinService;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -53,12 +55,20 @@ public class Controller {
     }
     @PostMapping(value = "/csv", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Boolean> readCSV(MultipartFile file) throws IOException {
-        csvReader.setLocalPath("C:\\Users\\jinmi\\OneDrive\\바탕 화면\\개발자노트\\git\\database_project\\csv\\","C:\\Users\\jinmi\\OneDrive\\바탕 화면\\개발자노트\\git\\database_project\\csv_output");
         Path path = csvReader.saveFile(file);
         boolean b = false;
         if(path != null) b = csvReader.loadCSV(path);
         return ResponseEntity.ok(path != null && b);
     }
+
+//    @GetMapping(value="/csv")
+//    public ResponseEntity<File> exportCSV() throws IOException {
+//        File file = csvReader.exportCSV("1_fitness_measurement");
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentDisposition(ContentDisposition.builder("attachment").filename(file.getName()).build());
+//        return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
+//    }
+
     @PostMapping(value = "/jointables")
     public ResponseEntity<Void> joinTables(@RequestBody JoinTableRequest joinTableRequest) throws Exception {
         String table_name = joinTableRequest.getTable_name();
