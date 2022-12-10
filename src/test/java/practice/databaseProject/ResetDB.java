@@ -34,7 +34,7 @@ public class ResetDB {
 
     public static void main(String[] args) {
         try(DBConnector dbConn = new MariaConnector()) {
-            dbConn.setUp(USERNAME, PASSWORD, IP_ADDR);
+            dbConn.getSetting(USERNAME, PASSWORD, IP_ADDR);
 
             // Get tables currently loaded into DB
             String[] existingTables = dbConn.queryFor(String.format(
@@ -56,7 +56,11 @@ public class ResetDB {
     }
 
     public static <T> void dropTables(DBConnector dbConn, T... tables) {
-        for(T table : tables) dbConn.queryExec(String.format("DROP TABLE `%s`;", table));
+        dbConn.queryExec("SET FOREIGN_KEY_CHECKS = 0;");
+        for(T table : tables) {
+            dbConn.queryExec(String.format("DROP TABLE IF EXISTS `%s`;", table));
+        }
+        dbConn.queryExec("SET FOREIGN_KEY_CHECKS = 1;");
     }
 
     public static void createMetaInfo(DBConnector dbConn) {
@@ -74,6 +78,7 @@ public class ResetDB {
                 "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  `representativeAttribute` varchar(50) DEFAULT NULL,\n" +
                 "  `representativeCombineKey` varchar(50) DEFAULT NULL,\n" +
+                String.format("FOREIGN KEY (`table_id`) REFERENCES `%s` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,\n", SpecialTable.META_TABLE) +
                 "  PRIMARY KEY (`table_id`,`name`),\n" +
                 "  KEY `table_id` (`table_id`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;"

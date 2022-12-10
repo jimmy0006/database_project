@@ -34,6 +34,7 @@ public class MariaConnector implements DBConnector {
                 "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  `representativeAttribute` varchar(50) DEFAULT NULL,\n" +
                 "  `representativeCombineKey` varchar(50) DEFAULT NULL,\n" +
+                String.format("FOREIGN KEY (`table_id`) REFERENCES `%s` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,\n", SpecialTable.META_TABLE) +
                 "  PRIMARY KEY (`table_id`,`name`),\n" +
                 "  KEY `table_id` (`table_id`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;");
@@ -41,6 +42,10 @@ public class MariaConnector implements DBConnector {
 
     @Override
     public void getSetting(String userName,String password,String address) throws ClassNotFoundException, SQLException{
+        if(dbConn != null) {
+            throw new RuntimeException("MariaConnector::getSetting was called when a connection already exists.");
+        }
+
         Class.forName("org.mariadb.jdbc.Driver");
         dbConn = DriverManager.getConnection(
                 "jdbc:mariadb://" +address, userName,password
