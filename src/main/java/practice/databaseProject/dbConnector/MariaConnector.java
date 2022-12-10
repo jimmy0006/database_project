@@ -1,8 +1,8 @@
 package practice.databaseProject.dbConnector;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import practice.databaseProject.entity.SQLResult;
+import practice.databaseProject.entity.SpecialTable;
 
 import java.sql.*;
 
@@ -12,17 +12,23 @@ public class MariaConnector implements DBConnector {
 
     @Override
     public void setUp(String userName, String password, String address) throws ClassNotFoundException, SQLException {
+        if(dbConn != null) {
+            throw new RuntimeException("MariaConnector::setUp was called when a connection already exists.");
+        }
+
         Class.forName("org.mariadb.jdbc.Driver");
         dbConn = DriverManager.getConnection(
                 "jdbc:mariadb://" + address, userName, password
         );
-        queryExec("CREATE TABLE IF NOT EXISTS `meta_table` (\n" +
+
+        queryExec(String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
                 "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  PRIMARY KEY (`id`),\n" +
                 "  UNIQUE KEY `name` (`name`)\n" +
-                ") ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;");
-        queryExec("CREATE TABLE IF NOT EXISTS `meta_column` (\n" +
+                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;");
+
+        queryExec(String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_COL) +
                 "  `table_id` int(10) unsigned NOT NULL,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
@@ -33,6 +39,7 @@ public class MariaConnector implements DBConnector {
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;");
     }
 
+    @Override
     public void getSetting(String userName,String password,String address) throws ClassNotFoundException, SQLException{
         Class.forName("org.mariadb.jdbc.Driver");
         dbConn = DriverManager.getConnection(
@@ -40,11 +47,10 @@ public class MariaConnector implements DBConnector {
         );
     }
 
-
-
     @Override
     public void close() throws SQLException {
         dbConn.close();
+        dbConn = null;
     }
 
     @Override
@@ -68,6 +74,5 @@ public class MariaConnector implements DBConnector {
             return null;
         }
     }
-
 
 }

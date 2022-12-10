@@ -2,18 +2,15 @@ package practice.databaseProject.join;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import practice.databaseProject.dbConnector.MariaConnector;
-import practice.databaseProject.dto.JoinResult;
-import practice.databaseProject.entity.SQLResult;
+import practice.databaseProject.dbConnector.DBConnector;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class JoinService {
-    private final MariaConnector mariaConnector;
+    private final DBConnector dbConnector;
     private final MultipleJoinService multipleJoinService;
 
 

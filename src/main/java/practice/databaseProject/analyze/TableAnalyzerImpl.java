@@ -17,7 +17,7 @@ public class TableAnalyzerImpl implements TableAnalyzer {
     @Override
     public AnalyzeResult analyze(String table, String[] columns) {
         int nEntries = Integer.parseInt(dbConn.queryFor(
-            String.format("SELECT table_rows FROM INFORMATION_SCHEMA.TABLES WHERE table_name = '%s';", table)
+            String.format("SELECT table_rows FROM %s WHERE table_name = '%s';", SpecialTable.INFO_TABLE, table)
         ).getRow(0)[0]);
         AnalyzeResult result = new AnalyzeResult();
 
@@ -33,9 +33,11 @@ public class TableAnalyzerImpl implements TableAnalyzer {
                 }
                 for (int i = 0; i < e.length(); i++) {
                     char c = e.charAt(i);
-                    if(c == '-' && i > 0) {
-                        isInteger = isReal = false;
-                        break row;
+                    if(c == '-') {
+                        if(i > 0) {
+                            isInteger = isReal = false;
+                            break row;
+                        }
                     } else if(c == '.') {
                         if(hasDecimal) {
                             isInteger = isReal = false;
@@ -65,11 +67,13 @@ public class TableAnalyzerImpl implements TableAnalyzer {
     public boolean update(String table, AnalyzeResult info) {
         for(String column : info.getColumns()) {
             if(!tableEditor.cast(table, column, info.getType(column))) return false;
-            String id = dbConn.queryFor(String.format("SELECT id FROM '%s' WHERE name='%s'", SpecialTable.META_TABLE, table)).getRow(0)[0];
-            if(!dbConn.queryExec(String.format("UPDATE %s SET '%s'='%s', '%s'='%s' WHERE table_id='%s' and name='%s';", SpecialTable.META_COL,
-                    "nullCount", info.getNullCount(column),
-                    "distinctCount", info.getDistinctCount(column),
-                    id, column
+            String id = dbConn.queryFor(String.format(
+                    "SELECT id FROM %s WHERE name = '%s'", SpecialTable.META_TABLE, table)
+            ).getRow(0)[0];
+
+            if(!dbConn.queryExec(String.format(
+                    "UPDATE %s SET %s = '%s' WHERE table_id = '%s' and name = '%s';",
+                    SpecialTable.META_COL, "type", info.getType(column), id, column
             ))) return false;
         }
         return true;

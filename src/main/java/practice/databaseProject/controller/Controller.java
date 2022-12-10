@@ -1,7 +1,6 @@
 package practice.databaseProject.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +12,12 @@ import practice.databaseProject.dictionary.StandardRepresentativeAttributeDictio
 import practice.databaseProject.dto.*;
 import practice.databaseProject.editAttribute.EditAttribute;
 import practice.databaseProject.entity.SQLType;
+import practice.databaseProject.entity.SpecialTable;
 import practice.databaseProject.join.JoinService;
 import practice.databaseProject.join.MultipleJoinService;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -115,13 +114,19 @@ public class Controller {
     }
     @PostMapping(value = "/setrepresentativeattribute")
     public ResponseEntity<Void> setRepresentativeAttribute(@RequestBody SetRepresentativeAttributeRequest setRepresentativeAttributeRequest) throws Exception {
-        String query = "UPDATE meta_column SET representativeAttribute = " + setRepresentativeAttributeRequest.getRepresentativeAttribute() + " WHERE table_id = " + "'"+setRepresentativeAttributeRequest.getTableId() + "'" + ", name = " + "'"+setRepresentativeAttributeRequest.getColumnName()+ "'";
+        String query = String.format("UPDATE %s SET representativeAttribute = %s WHERE table_id = '%s', name = '%s';",
+                SpecialTable.META_COL.toString(), setRepresentativeAttributeRequest.getRepresentativeAttribute(),
+                setRepresentativeAttributeRequest.getTableId(), setRepresentativeAttributeRequest.getColumnName()
+        );
         mariaConnector.queryExec(query);
         return ResponseEntity.ok().build();
     }
     @PostMapping(value = "/setrepresentativecombinekey")
     public ResponseEntity<Void> setRepresentativeCombineKey(@RequestBody SetRepresentativeCombineKeyRequest setRepresentativeCombineKeyRequest) throws Exception {
-        String query = "UPDATE meta_column SET representativeCombineKey = " + setRepresentativeCombineKeyRequest.getRepresentativeCombineKey() + " WHERE table_id = " + "'"+ setRepresentativeCombineKeyRequest.getTableId() + "'" + ", name = " + "'"+setRepresentativeCombineKeyRequest.getColumnName()+ "'";
+        String query = String.format("UPDATE %s SET representativeCombineKey = %s WHERE table_id = '%s', name = '%s'",
+                SpecialTable.META_COL.toString(), setRepresentativeCombineKeyRequest.getRepresentativeCombineKey(),
+                setRepresentativeCombineKeyRequest.getTableId(), setRepresentativeCombineKeyRequest.getColumnName()
+        );
         mariaConnector.queryExec(query);
         return ResponseEntity.ok().build();
     }

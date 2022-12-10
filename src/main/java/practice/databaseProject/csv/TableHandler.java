@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
-import practice.databaseProject.entity.SQLResult;
 import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.entity.SpecialTable;
 
@@ -12,7 +11,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor

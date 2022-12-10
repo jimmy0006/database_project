@@ -14,4 +14,11 @@ public interface DBConnector extends AutoCloseable {
 
     public boolean queryExec(String qString);
     public SQLResult queryFor(String qString);
+
+    /*
+    * MySQL Query Tips
+    * Use backtick(`) for table/column identifiers
+    * Use single quotes (') for string
+    * Can use double quotes instead of single quotes but not recommended (acts like backtick in standard SQL)
+    * */
 }

@@ -1,7 +1,6 @@
 package practice.databaseProject.domainScanner;
 
 import lombok.RequiredArgsConstructor;
-import practice.databaseProject.entity.SQLType;
 
 import java.util.*;
 
