@@ -29,7 +29,7 @@ public class Controller {
     private final JoinService joinService;
     private final CSVHandler csvReader;
     private final MultipleJoinService multipleJoinService;
-    private final DBConnector mariaConnector;
+    private final DBConnector dbConn;
     private final EditAttribute editAttribute;
     private final StandardRepresentativeAttributeDictionary standardRepresentativeAttributeDictionary;
     private final StandardCombineKeyDictionary standardCombineKeyDictionary;
@@ -45,7 +45,7 @@ public class Controller {
         String password = dbConnectionRequest.getPassword();
         boolean connected = true;
         try {
-            mariaConnector.setUp(user, password, host + ":" + port + "/" + database);
+            dbConn.setUp(user, password, host + ":" + port + "/" + database);
         } catch (Exception e) {
             connected = false;
             System.out.println(e);
@@ -97,12 +97,12 @@ public class Controller {
 
     @PostMapping(value = "/editattribute")
     public ResponseEntity<Boolean> updateTableInfo(@RequestBody CastAttributeRequestDto request){
-        return ResponseEntity.ok(editAttribute.cast(request.getTable(), request.getColumn(), SQLType.valueOf(request.getType())));
+        return ResponseEntity.ok(editAttribute.cast(dbConn.queryTableId(request.getTable()), request.getColumn(), SQLType.valueOf(request.getType())));
     }
 
     @DeleteMapping(value = "/editattribute")
     public ResponseEntity<Boolean> deleteTableAttribute(@RequestBody DeleteAttributeRequestDto request){
-        return ResponseEntity.ok(editAttribute.deleteAttribute(request.getTable(), request.getColumn()));
+        return ResponseEntity.ok(editAttribute.deleteAttribute(dbConn.queryTableId(request.getTable()), request.getColumn()));
     }
     @PostMapping(value = "/getrepresentativeattributes")
     public ResponseEntity<List<String>> getRepresentativeAttributes() throws Exception {
@@ -128,7 +128,7 @@ public class Controller {
                 SpecialTable.META_COL.toString(), setRepresentativeAttributeRequest.getRepresentativeAttribute(),
                 setRepresentativeAttributeRequest.getTableId(), setRepresentativeAttributeRequest.getColumnName()
         );
-        mariaConnector.queryExec(query);
+        dbConn.queryExec(query);
         return ResponseEntity.ok().build();
     }
     @PostMapping(value = "/setrepresentativecombinekey")
@@ -137,7 +137,7 @@ public class Controller {
                 SpecialTable.META_COL.toString(), setRepresentativeCombineKeyRequest.getRepresentativeCombineKey(),
                 setRepresentativeCombineKeyRequest.getTableId(), setRepresentativeCombineKeyRequest.getColumnName()
         );
-        mariaConnector.queryExec(query);
+        dbConn.queryExec(query);
         return ResponseEntity.ok().build();
     }
 }

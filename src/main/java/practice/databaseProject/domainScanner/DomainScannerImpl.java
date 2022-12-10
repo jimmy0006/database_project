@@ -13,12 +13,13 @@ public class DomainScannerImpl implements DomainScanner {
     private final DBConnector dbConn;
 
     @Override
-    public DomainScan scan(String table, String[] columns) {
+    public DomainScan scan(int tableId, String[] columns) {
+        String tableName = dbConn.getTableName(tableId);
         DomainScan result = new DomainScan();
         for(String col : columns) {
             String[] qRes = dbConn.queryFor(String.format(
                     "SELECT COUNT(*) Total, COUNT(%s) NotNull, COUNT(DISTINCT %s) Distinct,(SELECT COUNT(*) FROM %s WHERE %s RLIKE '%s') Normal, (SELECT COUNT(*) FROM %s WHERE %s = 0) Zero, Min(%s) Min, Max(%s) Max",
-                    col, col, table, col, PAT_NORMAL, table, col, col, col)).getRow(0);
+                    col, col, tableName, col, PAT_NORMAL, tableName, col, col, col)).getRow(0);
             int[] counts = new int[5];
             for(int i = 0; i < counts.length; ++i) {
                 counts[i] = Integer.parseInt(qRes[i]);

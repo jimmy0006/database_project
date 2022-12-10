@@ -6,14 +6,17 @@ import java.sql.SQLException;
 
 public interface DBConnector extends AutoCloseable {
     @Override
-    public void close() throws SQLException;
+    void close() throws SQLException;
 
-    public void setUp(String userName, String password, String address) throws ClassNotFoundException, SQLException;
+    void setUp(String userName, String password, String address) throws ClassNotFoundException, SQLException;
 
-    public void getSetting(String userName,String password,String address) throws ClassNotFoundException, SQLException;
+    void getSetting(String userName,String password,String address) throws ClassNotFoundException, SQLException;
 
-    public boolean queryExec(String qString);
-    public SQLResult queryFor(String qString);
+    boolean queryExec(String qString);
+    SQLResult queryFor(String qString);
+
+    int queryTableId(String tableName);
+    String getTableName(int tableId);
 
     /*
     * MySQL Query Tips

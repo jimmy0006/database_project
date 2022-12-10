@@ -3,12 +3,18 @@ package practice.databaseProject.dbConnector;
 import org.springframework.stereotype.Component;
 import practice.databaseProject.entity.SQLResult;
 import practice.databaseProject.entity.SpecialTable;
+import java.util.*;
 
 import java.sql.*;
 
 @Component
 public class MariaConnector implements DBConnector {
     private Connection dbConn;
+    private final Map<Integer, String> tableKeys;
+
+    public MariaConnector() {
+        tableKeys = new HashMap<>();
+    }
 
     @Override
     public void setUp(String userName, String password, String address) throws ClassNotFoundException, SQLException {
@@ -80,4 +86,22 @@ public class MariaConnector implements DBConnector {
         }
     }
 
+    @Override
+    public int queryTableId(String tableName) {
+        if(tableName == null) return -1;
+
+        SQLResult r = queryFor(String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE, tableName));
+        if (r == null) return -1;
+
+        int id = Integer.parseInt(r.getRow(0)[0]);
+        tableKeys.put(id, tableName);
+        return id;
+    }
+
+    /** Non-negative tableId that did not come from queryTableId will return null */
+    @Override
+    public String getTableName(int tableId) {
+        if(tableId < 0) return null;
+        return tableKeys.getOrDefault(tableId, null);
+    }
 }

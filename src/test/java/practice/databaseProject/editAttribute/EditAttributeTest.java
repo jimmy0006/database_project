@@ -36,7 +36,7 @@ class EditAttributeTest {
 
     @Test
     void cast() throws SQLException, ClassNotFoundException {
-        boolean success = editAttribute.cast("2_physical_instructor_practice_info", "OPERTN_YEAR", SQLType.TEXT);
+        boolean success = editAttribute.cast(mariaConnector.queryTableId("2_physical_instructor_practice_info"), "OPERTN_YEAR", SQLType.TEXT);
         System.out.println(success);
     }
 }

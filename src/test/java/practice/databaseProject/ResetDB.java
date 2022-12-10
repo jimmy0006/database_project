@@ -102,9 +102,7 @@ public class ResetDB {
             dbConn.queryExec(String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), table));
 
             // Get table ID
-            String tId = dbConn.queryFor(String.format(
-                    "SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE.toString(), table)
-            ).getRow(0)[0];
+            int tId = dbConn.queryTableId(table);
 
             // Add to META_COL
             String[] metaColSQL = Arrays.stream(columns)
@@ -115,13 +113,16 @@ public class ResetDB {
             );
 
             // Update column info
-            AnalyzeResult columnInfo = analyzer.analyze(table, columns);
+            AnalyzeResult columnInfo = analyzer.analyze(tId, columns);
             Arrays.stream(columns).forEach(column -> {
                 dbConn.queryExec(String.format(
                         "UPDATE `%s` SET type = '%s' WHERE table_id='%s' and name='%s';",
                         SpecialTable.META_COL, columnInfo.getType(column), tId, column
                 ));
             });
+
         }
+
     }
+
 }

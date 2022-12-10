@@ -53,15 +53,17 @@ public class TableHandler implements CSVHandler {
 
     @Override
     public boolean loadCSV(Path path) {
-        String tableName = path.getFileName().toString().substring(0,path.getFileName().toString().lastIndexOf("."));
+        String fileName = path.getFileName().toString();
+        String tableName = fileName.substring(0, fileName.lastIndexOf("."));
         String[] columns = columnFromCSV(path);
         if(columns == null) return false;
 
-        String createQuery = "CREATE TABLE `" + tableName+"`(";
-        for (String s : columns) {
-            createQuery+=s+" TEXT,";
+        String[] queryComponent = new String[columns.length];
+
+        for (int i = 0; i < queryComponent.length; ++i) {
+            queryComponent[i] = columns[i] + " TEXT";
         }
-        createQuery = createQuery.substring(0, createQuery.length() - 1)+");";
+        String createQuery = String.format("CREATE TABLE `%s` (%s);", tableName, String.join(", ", queryComponent));
         if(!dbConn.queryExec(createQuery)) return false;
 
         String loadQuery = String.join("\n",
@@ -78,16 +80,11 @@ public class TableHandler implements CSVHandler {
         String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
         if(!dbConn.queryExec(registerTableQuery)) return false;
 
-        String tId = dbConn.queryFor(
-                String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE.toString(), tableName)
-        ).getRow(0)[0];
-
-        String[] entryVals = new String[columns.length];
-        for(int i = 0; i < entryVals.length; ++i) {
+        for(int i = 0; i < queryComponent.length; ++i) {
             // (table id, column name, type) -> type = TEXT
-            entryVals[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], SQLType.TEXT.toString());
+            queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", dbConn.queryTableId(tableName), columns[i], SQLType.TEXT.toString());
         }
-        String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", entryVals));
+        String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", queryComponent));
         return dbConn.queryExec(registerColumnsQuery);
     }
 

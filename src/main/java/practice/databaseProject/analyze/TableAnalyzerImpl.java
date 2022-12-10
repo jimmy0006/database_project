@@ -15,14 +15,11 @@ public class TableAnalyzerImpl implements TableAnalyzer {
 
     /** Expects @param columns to be in order of table schema */
     @Override
-    public AnalyzeResult analyze(String table, String[] columns) {
-        int nEntries = Integer.parseInt(dbConn.queryFor(
-            String.format("SELECT table_rows FROM %s WHERE table_name = '%s';", SpecialTable.INFO_TABLE, table)
-        ).getRow(0)[0]);
+    public AnalyzeResult analyze(int tableId, String[] columns) {
         AnalyzeResult result = new AnalyzeResult();
 
         for(String col : columns) {
-            String[] data = dbConn.queryFor(String.format("SELECT DISTINCT(%s) FROM %s;", col, table)).getCol(0);
+            String[] data = dbConn.queryFor(String.format("SELECT DISTINCT(%s) FROM %s;", col, dbConn.getTableName(tableId))).getCol(0);
             // data may be null if SQLException but is not handled... Could lead to NullPointerException
             boolean isInteger = true, isReal = true, hasDecimal = false;
             int nullCount = 0;
@@ -64,16 +61,13 @@ public class TableAnalyzerImpl implements TableAnalyzer {
     }
 
     @Override
-    public boolean update(String table, AnalyzeResult info) {
+    public boolean update(int tableId, AnalyzeResult info) {
         for(String column : info.getColumns()) {
-            if(!tableEditor.cast(table, column, info.getType(column))) return false;
-            String id = dbConn.queryFor(String.format(
-                    "SELECT id FROM %s WHERE name = '%s'", SpecialTable.META_TABLE, table)
-            ).getRow(0)[0];
+            if(!tableEditor.cast(tableId, column, info.getType(column))) return false;
 
             if(!dbConn.queryExec(String.format(
                     "UPDATE %s SET %s = '%s' WHERE table_id = '%s' and name = '%s';",
-                    SpecialTable.META_COL, "type", info.getType(column), id, column
+                    SpecialTable.META_COL, "type", info.getType(column), tableId, column
             ))) return false;
         }
         return true;
