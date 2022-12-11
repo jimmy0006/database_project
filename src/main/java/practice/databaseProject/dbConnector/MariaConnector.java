@@ -27,14 +27,14 @@ public class MariaConnector implements DBConnector {
                 "jdbc:mariadb://" + address, userName, password
         );
 
-        queryExec(String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
+        String metaTable = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
                 "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  PRIMARY KEY (`id`),\n" +
                 "  UNIQUE KEY `name` (`name`)\n" +
-                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;");
+                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
 
-        queryExec(String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_COL) +
+        String metaColumn = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_COL) +
                 "  `table_id` int(10) unsigned NOT NULL,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
@@ -43,7 +43,9 @@ public class MariaConnector implements DBConnector {
                 String.format("FOREIGN KEY (`table_id`) REFERENCES `%s` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,\n", SpecialTable.META_TABLE) +
                 "  PRIMARY KEY (`table_id`,`name`),\n" +
                 "  KEY `table_id` (`table_id`)\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;");
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
+
+        queryExecBatch(metaTable, metaColumn);
     }
 
     @Override
@@ -84,6 +86,31 @@ public class MariaConnector implements DBConnector {
             e.printStackTrace(System.err);
             return null;
         }
+    }
+
+    @Override
+    public boolean queryExecBatch(String... qStrings) {
+        boolean result = true;
+        try {
+            try(Statement stmt = dbConn.createStatement()) {
+                dbConn.setAutoCommit(false);
+
+                for(String qString : qStrings) stmt.addBatch(qString);
+                stmt.executeBatch();
+
+                dbConn.commit();
+            } catch(SQLException e) {   // + BatchUpdateException
+                result = false;
+                dbConn.rollback();
+                e.printStackTrace(System.err);
+            } finally {
+                dbConn.setAutoCommit(true);
+            }
+        } catch(SQLException e) {
+            e.printStackTrace(System.err);
+        }
+
+        return result;
     }
 
     @Override

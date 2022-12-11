@@ -34,16 +34,14 @@ public class EditAttribute {
 
     /** Column Info must be populated into meta_column */
     public boolean cast(int tableId, String column, SQLType type) {
-        if(dbConnector.queryExec(String.format("ALTER TABLE `%s` MODIFY `%s` %s;", dbConnector.getTableName(tableId), column, type))) {
-            return dbConnector.queryExec(String.format("UPDATE `%s` SET type = '%s' WHERE table_id='%s' and name='%s';", SpecialTable.META_COL, type, tableId, column));
-        }
-        return false;
+        String castSql = String.format("ALTER TABLE `%s` MODIFY `%s` %s;", dbConnector.getTableName(tableId), column, type);
+        String metaInfoSql = String.format("UPDATE `%s` SET type = '%s' WHERE table_id='%s' and name='%s';", SpecialTable.META_COL, type, tableId, column);
+        return dbConnector.queryExecBatch(castSql, metaInfoSql);
     }
 
     public boolean deleteAttribute(int tableId, String column){
-        if(dbConnector.queryExec(String.format("ALTER TABLE `%s` DROP COLUMN %s;", dbConnector.getTableName(tableId), column))) {
-            return dbConnector.queryExec(String.format("DELETE FROM `%s` WHERE table_id='%s' AND name='%s';", SpecialTable.META_COL, tableId, column));
-        }
-        return false;
+        String dropSql = String.format("ALTER TABLE `%s` DROP COLUMN %s;", dbConnector.getTableName(tableId), column);
+        String metaInfoSql = String.format("DELETE FROM `%s` WHERE table_id='%s' AND name='%s';", SpecialTable.META_COL, tableId, column);
+        return dbConnector.queryExecBatch(dropSql, metaInfoSql);
     }
 }

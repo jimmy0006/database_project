@@ -11,6 +11,7 @@ import practice.databaseProject.entity.SpecialTable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class ResetDB {
     static final List<String> sampleTables = Arrays.asList("1_fitness_measurement",
@@ -56,23 +57,25 @@ public class ResetDB {
     }
 
     public static <T> void dropTables(DBConnector dbConn, T... tables) {
-        dbConn.queryExec("SET FOREIGN_KEY_CHECKS = 0;");
-        for(T table : tables) {
-            dbConn.queryExec(String.format("DROP TABLE IF EXISTS `%s`;", table));
+        String[] queries = new String[tables.length + 2];
+        queries[0] = "SET FOREIGN_KEY_CHECKS = 0;";
+        queries[queries.length - 1] = "SET FOREIGN_KEY_CHECKS = 1;";
+        for (int i = 0; i < tables.length; i++) {
+            queries[i + 1] = String.format("DROP TABLE IF EXISTS `%s`;", tables[i]);
         }
-        dbConn.queryExec("SET FOREIGN_KEY_CHECKS = 1;");
+
+        dbConn.queryExecBatch(queries);
     }
 
     public static void createMetaInfo(DBConnector dbConn) {
-        dbConn.queryExec(String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
+        String metaTable = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
                 "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  PRIMARY KEY (`id`),\n" +
                 "  UNIQUE KEY `name` (`name`)\n" +
-                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;"
-        );
+                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
 
-        dbConn.queryExec(String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_COL) +
+        String metaColumn = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_COL) +
                 "  `table_id` int(10) unsigned NOT NULL,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
@@ -81,8 +84,9 @@ public class ResetDB {
                 String.format("FOREIGN KEY (`table_id`) REFERENCES `%s` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,\n", SpecialTable.META_TABLE) +
                 "  PRIMARY KEY (`table_id`,`name`),\n" +
                 "  KEY `table_id` (`table_id`)\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;"
-        );
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
+
+        dbConn.queryExecBatch(metaTable, metaColumn);
     }
 
     public static void analyzeLoaded(DBConnector dbConn, String[] existingTables) {
@@ -104,22 +108,12 @@ public class ResetDB {
             // Get table ID
             int tId = dbConn.queryTableId(table);
 
-            // Add to META_COL
-            String[] metaColSQL = Arrays.stream(columns)
-                    .map(col -> String.format("(%s, '%s', '%s', null, null)", tId, col, SQLType.TEXT.toString()))
-                    .toArray(String[]::new);
-            dbConn.queryExec(String.format(
-                    "INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", metaColSQL))
-            );
-
             // Update column info
             AnalyzeResult columnInfo = analyzer.analyze(tId, columns);
-            Arrays.stream(columns).forEach(column -> {
-                dbConn.queryExec(String.format(
-                        "UPDATE `%s` SET type = '%s' WHERE table_id='%s' and name='%s';",
-                        SpecialTable.META_COL, columnInfo.getType(column), tId, column
-                ));
-            });
+            String[] metaColSQL = Arrays.stream(columns)
+                    .map(col -> String.format("(%s, '%s', '%s', null, null)", tId, col, columnInfo.getType(col)))
+                    .toArray(String[]::new);
+            dbConn.queryExec(String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", metaColSQL)));
 
         }
 

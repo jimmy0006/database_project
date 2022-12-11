@@ -64,7 +64,6 @@ public class TableHandler implements CSVHandler {
             queryComponent[i] = columns[i] + " TEXT";
         }
         String createQuery = String.format("CREATE TABLE `%s` (%s);", tableName, String.join(", ", queryComponent));
-        if(!dbConn.queryExec(createQuery)) return false;
 
         String loadQuery = String.join("\n",
                 String.format("LOAD DATA LOCAL INFILE '%s'", path.toString()).replace('\\','/'),
@@ -75,14 +74,15 @@ public class TableHandler implements CSVHandler {
                 "LINES TERMINATED BY '\\n'",
                 "IGNORE 1 LINES;"
         );
-        if(!dbConn.queryExec(loadQuery)) return false;
 
         String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
-        if(!dbConn.queryExec(registerTableQuery)) return false;
 
+        if(!dbConn.queryExecBatch(createQuery, loadQuery, registerTableQuery)) return false;
+
+        int tId = dbConn.queryTableId(tableName);
         for(int i = 0; i < queryComponent.length; ++i) {
             // (table id, column name, type) -> type = TEXT
-            queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", dbConn.queryTableId(tableName), columns[i], SQLType.TEXT.toString());
+            queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], SQLType.TEXT.toString());
         }
         String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", queryComponent));
         return dbConn.queryExec(registerColumnsQuery);
