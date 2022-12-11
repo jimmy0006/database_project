@@ -1,6 +1,6 @@
 package practice.databaseProject.analyze;
 
 public interface TableAnalyzer {
-    public AnalyzeResult analyze(String table, String[] columns);
-    public boolean update(String table, AnalyzeResult info);
+    public AnalyzeResult analyze(int tableId, String[] columns);
+    public boolean update(int tableId, AnalyzeResult info);
 }

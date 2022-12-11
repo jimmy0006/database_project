@@ -5,6 +5,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# For localized test convenience
+/src/test/java/practice/databaseProject/ResetDB.java
+
 ### STS ###
 .apt_generated
 .classpath

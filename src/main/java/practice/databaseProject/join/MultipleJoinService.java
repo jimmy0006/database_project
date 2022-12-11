@@ -2,19 +2,10 @@ package practice.databaseProject.join;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.yaml.snakeyaml.util.ArrayUtils;
 import practice.databaseProject.dbConnector.DBConnector;
-import practice.databaseProject.dbConnector.MariaConnector;
 import practice.databaseProject.dto.JoinResult;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,7 +13,7 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class MultipleJoinService {
 
-    private final MariaConnector mariaConnector;
+    private final DBConnector dbConnector;
 
     private List<Boolean> isComplete;
     private String table_name, table_column, combined_column;
@@ -32,22 +23,22 @@ public class MultipleJoinService {
     class CustomThread extends Thread {
 
         String query;
-        Integer index;
+        int index;
 
-        public CustomThread (String query,Integer index) {
+        public CustomThread (String query, int index) {
             this.query=query;
             this.index=index;
         }
 
         public void run() {
-            mariaConnector.queryExec(query);
+            dbConnector.queryExec(query);
             isComplete.set(index,true);
         }
     }
 
     public void multipleJoinQueryExecutor(List<String> queries) {
 
-        for(Integer i=0;i<queries.size();++i) {
+        for(int i=0;i<queries.size();++i) {
             CustomThread temp= new CustomThread(queries.get(i),i);
             temp.start();
         }
@@ -63,21 +54,16 @@ public class MultipleJoinService {
         this.table_columns = table_columns;
         this.combined_column = combined_column;
 
-        isComplete = new ArrayList<Boolean>(Collections.nCopies(table_names.size(), false));
-        Collections.fill(isComplete, false);
-    }
-
-
-    public static boolean contains(final int[] arr, final int key) {
-        return Arrays.stream(arr).anyMatch(i -> i == key);
+        Boolean[] tmp = new Boolean[table_names.size()];
+        Arrays.fill(tmp, false);
+        isComplete = Arrays.asList(tmp);
     }
 
     public List<JoinResult> getInfo() {
-        Boolean val = true;
-        int[] indexes =
-                IntStream.range(0, isComplete.size())
-                        .filter(i -> isComplete.get(i).equals(val))
-                        .toArray();
+        Set<Integer> indexes = IntStream.range(0, isComplete.size())
+                .filter(isComplete::get)
+                .boxed()
+                .collect(Collectors.toCollection(HashSet::new));
         completed = Collections.frequency(isComplete, true);
         List<JoinResult> join_results = new ArrayList<>();
         for (int index = 0; index < table_names.size(); ++index) {
@@ -89,14 +75,14 @@ public class MultipleJoinService {
             String table2_count_query = "SELECT COUNT(*) FROM " + table2_name;
             String combined_count_query = "SELECT COUNT(*) FROM " + combined_name;
 
-            int table_num_records = Integer.parseInt(mariaConnector.queryFor(table_count_query).getRow(0)[0]);
-            int table2_num_records = Integer.parseInt(mariaConnector.queryFor(table2_count_query).getRow(0)[0]);
+            int table_num_records = Integer.parseInt(dbConnector.queryFor(table_count_query).getRow(0)[0]);
+            int table2_num_records = Integer.parseInt(dbConnector.queryFor(table2_count_query).getRow(0)[0]);
 
             float table_success_rate, table2_success_rate;
             int combined_num_records;
             String completion;
-            if (contains(indexes, index)) {
-                combined_num_records = Integer.parseInt(mariaConnector.queryFor(combined_count_query).getRow(0)[0]);
+            if (indexes.contains(index)) {
+                combined_num_records = Integer.parseInt(dbConnector.queryFor(combined_count_query).getRow(0)[0]);
                 table_success_rate = (float) combined_num_records/table_num_records;
                 table2_success_rate = (float) combined_num_records/table2_num_records;
                 completion = "완료";
@@ -108,7 +94,7 @@ public class MultipleJoinService {
                 completion = "진행 중";
             }
 
-            int num_completed = indexes.length;
+            int num_completed = indexes.size();
             int num_to_be_joined = isComplete.size();
 
             JoinResult join_result = new JoinResult(table_name, table2_name, combined_name, table_num_records, table2_num_records, combined_num_records, table_column, table_columns.get(index), combined_column, table_success_rate, table2_success_rate, completion, num_to_be_joined, num_completed);
