@@ -1,25 +1,20 @@
 package practice.databaseProject.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.csv.CSVHandler;
 import practice.databaseProject.dbConnector.DBConnector;
-import practice.databaseProject.dictionary.StandardCombineKeyDictionary;
-import practice.databaseProject.dictionary.StandardRepresentativeAttributeDictionary;
+import practice.databaseProject.dictionary.*;
 import practice.databaseProject.dto.*;
 import practice.databaseProject.editAttribute.EditAttribute;
-import practice.databaseProject.entity.SQLType;
-import practice.databaseProject.entity.SpecialTable;
-import practice.databaseProject.join.JoinService;
-import practice.databaseProject.join.MultipleJoinService;
+import practice.databaseProject.entity.*;
+import practice.databaseProject.join.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -90,9 +85,18 @@ public class Controller {
     }
 
     @GetMapping(value = "/editattribute")
-    public ResponseEntity<List<TableInfo>> getTableInfo(){
-        List<TableInfo> editable = editAttribute.Editable();
-        return ResponseEntity.ok(editable);
+    public ResponseEntity<DomainScanResponse> getTableInfo(@RequestBody DomainScanRequest request) {
+        String[] tables = request.getTables();
+        DomainScanResponse response = new DomainScanResponse();
+        TableInfo[] scanResults = new TableInfo[tables.length];
+        for(int i = 0; i < tables.length; ++i) {
+            int tableId = dbConn.queryTableId(tables[i]);
+            SQLResult colInfo = dbConn.queryFor(String.format("SELECT name, type FROM `%s` WHERE table_id = `%s`;", SpecialTable.META_COL, tableId));
+            String[] columns = colInfo.getCol(colInfo.getColIndex("name"));
+            String[] types = colInfo.getCol(colInfo.getColIndex("type"));
+            scanResults[i] = editAttribute.scanTable(tables[i], columns, types);
+        }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/editattribute")

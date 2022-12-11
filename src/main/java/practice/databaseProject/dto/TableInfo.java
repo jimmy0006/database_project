@@ -7,6 +7,6 @@ import java.util.List;
 @Data
 public class TableInfo {
     private String name;
-    private int count;
-    private List<String> attributes;
+    private int count;      // record count
+    private ColumnInfo[] columns;
 }
