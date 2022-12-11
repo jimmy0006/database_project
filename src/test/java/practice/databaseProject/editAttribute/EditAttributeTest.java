@@ -25,6 +25,7 @@ class EditAttributeTest {
         mariaConnector.setUp("root", "1234", "localhost:3305/test");
     }
 
+    /*
     @Test
     void editable(){
         List<TableInfo> editable = editAttribute.Editable();
@@ -33,6 +34,7 @@ class EditAttributeTest {
             System.out.println(tableInfo.getAttributes().toString());
         }
     }
+    */
 
     @Test
     void cast() throws SQLException, ClassNotFoundException {
