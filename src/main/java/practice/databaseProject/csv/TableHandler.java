@@ -1,15 +1,10 @@
 package practice.databaseProject.csv;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItem;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
 import practice.databaseProject.entity.SQLResult;
 import practice.databaseProject.entity.SQLType;
@@ -24,7 +19,7 @@ import java.nio.file.Path;
 public class TableHandler implements CSVHandler {
     private final DBConnector dbConn;
 
-    private Path localPathIn = Path.of("C:\\Users\\jinmi\\OneDrive\\바탕 화면\\개발자노트\\git\\database_project\\csv\\").toAbsolutePath().normalize();
+    private Path localPathIn = Path.of(".", "csv").toAbsolutePath().normalize();
     private Path localPathOut = Path.of("C:\\Program Files\\MariaDB 10.6\\data\\result\\").toAbsolutePath().normalize();
 
     @Override
@@ -78,10 +73,7 @@ public class TableHandler implements CSVHandler {
         );
 
         String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
-        if(!dbConn.queryExec(createQuery)) return false;
-        if(!dbConn.queryExec(loadQuery)) return false;
-        if(!dbConn.queryExec(registerTableQuery)) return false;
-//        if(!dbConn.queryExecBatch(createQuery, loadQuery, registerTableQuery)) return false;
+        if(!dbConn.queryExecAll(createQuery, loadQuery, registerTableQuery)) return false;
 
         int tId = dbConn.queryTableId(tableName);
         for(int i = 0; i < queryComponent.length; ++i) {

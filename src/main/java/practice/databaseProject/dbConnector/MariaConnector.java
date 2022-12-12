@@ -45,7 +45,7 @@ public class MariaConnector implements DBConnector {
                 "  KEY `table_id` (`table_id`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
 
-        queryExecBatch(metaTable, metaColumn);
+        queryExecAll(metaTable, metaColumn);
     }
 
     @Override
@@ -90,28 +90,11 @@ public class MariaConnector implements DBConnector {
     }
 
     @Override
-    public boolean queryExecBatch(String... qStrings) {
-        boolean result = true;
-        try {
-            try(Statement stmt = dbConn.createStatement()) {
-                dbConn.setAutoCommit(false);
-
-                for(String qString : qStrings) stmt.addBatch(qString);
-                stmt.executeBatch();
-
-                dbConn.commit();
-            } catch(SQLException e) {   // + BatchUpdateException
-                result = false;
-                dbConn.rollback();
-                e.printStackTrace(System.err);
-            } finally {
-                dbConn.setAutoCommit(true);
-            }
-        } catch(SQLException e) {
-            e.printStackTrace(System.err);
+    public boolean queryExecAll(String... qStrings) {
+        for(String query : qStrings) {
+            if(!queryExec(query)) return false;
         }
-
-        return result;
+        return true;
     }
 
     @Override

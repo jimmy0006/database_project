@@ -6,7 +6,8 @@ build/
 !**/src/test/**/build/
 
 # For localized test convenience
-/src/test/java/practice/databaseProject/ResetDB.java
+src/test/java/practice/databaseProject/ResetDB.java
+csv/
 
 ### STS ###
 .apt_generated

@@ -6,12 +6,10 @@ import practice.databaseProject.analyze.TableAnalyzerImpl;
 import practice.databaseProject.dbConnector.*;
 import practice.databaseProject.editAttribute.EditAttribute;
 import practice.databaseProject.entity.SQLResult;
-import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.entity.SpecialTable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class ResetDB {
     static final List<String> sampleTables = Arrays.asList("1_fitness_measurement",
@@ -64,7 +62,7 @@ public class ResetDB {
             queries[i + 1] = String.format("DROP TABLE IF EXISTS `%s`;", tables[i]);
         }
 
-        dbConn.queryExecBatch(queries);
+        dbConn.queryExecAll(queries);
     }
 
     public static void createMetaInfo(DBConnector dbConn) {
@@ -86,7 +84,7 @@ public class ResetDB {
                 "  KEY `table_id` (`table_id`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
 
-        dbConn.queryExecBatch(metaTable, metaColumn);
+        dbConn.queryExecAll(metaTable, metaColumn);
     }
 
     public static void analyzeLoaded(DBConnector dbConn, String[] existingTables) {

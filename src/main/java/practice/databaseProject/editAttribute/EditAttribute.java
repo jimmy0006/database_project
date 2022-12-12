@@ -9,10 +9,6 @@ import practice.databaseProject.dto.TableInfo;
 import practice.databaseProject.entity.SQLResult;
 import practice.databaseProject.entity.SpecialTable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class EditAttribute {
@@ -97,12 +93,12 @@ public class EditAttribute {
     public boolean cast(int tableId, String column, SQLType type) {
         String castSql = String.format("ALTER TABLE `%s` MODIFY `%s` %s;", dbConnector.getTableName(tableId), column, type);
         String metaInfoSql = String.format("UPDATE `%s` SET type = '%s' WHERE table_id='%s' and name='%s';", SpecialTable.META_COL, type, tableId, column);
-        return dbConnector.queryExecBatch(castSql, metaInfoSql);
+        return dbConnector.queryExecAll(castSql, metaInfoSql);
     }
 
     public boolean deleteAttribute(int tableId, String column){
         String dropSql = String.format("ALTER TABLE `%s` DROP COLUMN %s;", dbConnector.getTableName(tableId), column);
         String metaInfoSql = String.format("DELETE FROM `%s` WHERE table_id='%s' AND name='%s';", SpecialTable.META_COL, tableId, column);
-        return dbConnector.queryExecBatch(dropSql, metaInfoSql);
+        return dbConnector.queryExecAll(dropSql, metaInfoSql);
     }
 }
