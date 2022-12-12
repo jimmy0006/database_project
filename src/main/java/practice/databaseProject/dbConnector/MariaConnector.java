@@ -62,12 +62,14 @@ public class MariaConnector implements DBConnector {
 
     @Override
     public void close() throws SQLException {
+        if(dbConn == null) throw new RuntimeException("Connection was null.");
         dbConn.close();
         dbConn = null;
     }
 
     @Override
     public boolean queryExec(String qString) {
+        if(dbConn == null) throw new RuntimeException("Connection was null.");
         try(Statement stmt = dbConn.createStatement();
             ResultSet rs = stmt.executeQuery(qString)) {
             return true;
@@ -79,6 +81,7 @@ public class MariaConnector implements DBConnector {
 
     @Override
     public SQLView queryFor(String qString) {
+        if(dbConn == null) throw new RuntimeException("Connection was null.");
         try(Statement stmt = dbConn.createStatement();
             ResultSet rs = stmt.executeQuery(qString)) {
             return new SQLView(rs);
@@ -91,6 +94,7 @@ public class MariaConnector implements DBConnector {
 
     @Override
     public boolean queryExecAll(String... qStrings) {
+        if(dbConn == null) throw new RuntimeException("Connection was null.");
         for(String query : qStrings) {
             if(!queryExec(query)) return false;
         }
@@ -99,6 +103,7 @@ public class MariaConnector implements DBConnector {
 
     @Override
     public int queryTableId(String tableName) {
+        if(dbConn == null) throw new RuntimeException("Connection was null.");
         if(tableName == null) return -1;
 
         SQLView r = queryFor(String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE, tableName));
@@ -111,6 +116,7 @@ public class MariaConnector implements DBConnector {
 
     @Override
     public int[] queryAllTableId() {
+        if(dbConn == null) throw new RuntimeException("Connection was null.");
         SQLView r = queryFor(String.format("SELECT id, name FROM `%s`;", SpecialTable.META_TABLE));
         if(r == null) return new int[]{};
         int[] ids = new int[r.getRowCount()];
@@ -127,6 +133,7 @@ public class MariaConnector implements DBConnector {
     /** Non-negative tableId that did not come from queryTableId will return null */
     @Override
     public String getTableName(int tableId) {
+        if(dbConn == null) throw new RuntimeException("Connection was null.");
         if(tableId < 0) return null;
         return tableKeys.getOrDefault(tableId, null);
     }
