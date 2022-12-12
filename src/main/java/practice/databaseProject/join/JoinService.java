@@ -37,6 +37,7 @@ public class JoinService {
         String combined_name = table1_name + "_" + table2_name;
         String query = "CREATE TABLE " + combined_name + " SELECT * from " + table1_name + " JOIN " + table2_name + " ON " + table1_name + "." + table1_column + " = " + table2_name + "." +table2_column;
 
+        singleJoinService.singleJoinExecutor(query);
 
     }
 
