@@ -13,6 +13,6 @@ public interface CSVHandler {
 
     public Path saveFile(MultipartFile file);
     public boolean loadCSV(Path path);
-    public File exportCSV(String tableName) throws IOException;
+    public Resource exportCSV(String tableName) throws IOException;
     public boolean saveAsCSV(String tableName) throws IOException;
 }

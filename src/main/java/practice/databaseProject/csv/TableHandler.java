@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItem;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
+import practice.databaseProject.entity.SQLResult;
 import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.entity.SpecialTable;
 
@@ -22,7 +24,7 @@ import java.nio.file.Path;
 public class TableHandler implements CSVHandler {
     private final DBConnector dbConn;
 
-    private Path localPathIn = Path.of(".\\csv\\").toAbsolutePath().normalize();
+    private Path localPathIn = Path.of("C:\\Users\\jinmi\\OneDrive\\바탕 화면\\개발자노트\\git\\database_project\\csv\\").toAbsolutePath().normalize();
     private Path localPathOut = Path.of("C:\\Program Files\\MariaDB 10.6\\data\\result\\").toAbsolutePath().normalize();
 
     @Override
@@ -76,8 +78,10 @@ public class TableHandler implements CSVHandler {
         );
 
         String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
-
-        if(!dbConn.queryExecBatch(createQuery, loadQuery, registerTableQuery)) return false;
+        if(!dbConn.queryExec(createQuery)) return false;
+        if(!dbConn.queryExec(loadQuery)) return false;
+        if(!dbConn.queryExec(registerTableQuery)) return false;
+//        if(!dbConn.queryExecBatch(createQuery, loadQuery, registerTableQuery)) return false;
 
         int tId = dbConn.queryTableId(tableName);
         for(int i = 0; i < queryComponent.length; ++i) {
@@ -88,23 +92,33 @@ public class TableHandler implements CSVHandler {
         return dbConn.queryExec(registerColumnsQuery);
     }
 
-    public File exportCSV(String tableName) throws IOException {
-       if(saveAsCSV(tableName)) {
-           return new File(localPathOut.resolve(tableName+".csv").toString());
-       }
+    public Resource exportCSV(String tableName) throws IOException {
+        if(saveAsCSV(tableName)){
+            Resource resource = new InputStreamResource(Files.newInputStream(localPathOut.resolve(tableName+".csv")));
+            File target = new File(localPathOut.resolve(tableName+".csv").toString());
+            target.delete();
+            return resource;
+        }
+
        return null;
     }
 
     public boolean saveAsCSV(String tableName) throws IOException {
         Files.createDirectories(localPathOut);
         Path path = localPathOut.resolve(tableName);
+        int id = dbConn.queryTableId(tableName);
+        SQLResult sqlResult = dbConn.queryFor(String.format("SELECT name FROM %s WHERE table_id='%d'",SpecialTable.META_COL, id));
+        String[] col = sqlResult.getCol(0);
+        String columnName="";
+        for (String s : col) {
+            columnName+="'"+s+"',";
+        }
         String exportQuery = String.join("\n",
-                String.format("SELECT * FROM %s", tableName),
+                String.format("SELECT %s UNION ALL SELECT %s FROM %s",columnName.substring(0, columnName.length() - 1),columnName.substring(0, columnName.length() - 1).replace('\'',' '), tableName),
                 String.format("INTO OUTFILE '%s.csv'", path.toString()).replace("\\","/"),
+                "character set euckr",
                 "FIELDS ENCLOSED BY '\"'",
-                "TERMINATED BY ';'",
-                "ESCAPED BY '\"'",
-                "LINES TERMINATED BY '\\r\\n';"
+                "TERMINATED BY ','"
         );
         return dbConn.queryExec(exportQuery);
     }

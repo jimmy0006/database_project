@@ -1,8 +1,8 @@
 package practice.databaseProject.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.csv.CSVHandler;
@@ -56,13 +56,14 @@ public class Controller {
         return ResponseEntity.ok(path != null && b);
     }
 
-//    @GetMapping(value="/csv")
-//    public ResponseEntity<File> exportCSV() throws IOException {
-//        File file = csvReader.exportCSV("1_fitness_measurement");
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentDisposition(ContentDisposition.builder("attachment").filename(file.getName()).build());
-//        return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
-//    }
+    @GetMapping(value="/csv")
+    public ResponseEntity<Resource> exportCSV(@ModelAttribute GetCSVfileRequest request) throws IOException {
+        Resource resource = csvReader.exportCSV(request.getFilename());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDisposition(ContentDisposition.builder("attachment").filename(request.getFilename()+".csv").build());
+        headers.add(HttpHeaders.CONTENT_TYPE,"text/csv");
+        return new ResponseEntity<>(resource,headers, HttpStatus.OK);
+    }
 
     @PostMapping(value = "/jointables")
     public ResponseEntity<Void> joinTables(@RequestBody JoinTableRequest joinTableRequest) throws Exception {
