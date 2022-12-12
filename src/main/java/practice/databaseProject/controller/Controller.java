@@ -106,16 +106,16 @@ public class Controller {
     }
 
     @GetMapping(value = "/editattribute")
-    public ResponseEntity<DomainScanResponse> getTableInfo(@RequestBody DomainScanRequest request) {
-        String[] tables = request.getTables();
+    public ResponseEntity<DomainScanResponse> getTableInfo() {
+        int[] tables = dbConn.queryAllTableId();
         DomainScanResponse response = new DomainScanResponse();
         TableInfo[] scanResults = new TableInfo[tables.length];
         for(int i = 0; i < tables.length; ++i) {
-            int tableId = dbConn.queryTableId(tables[i]);
-            SQLResult colInfo = dbConn.queryFor(String.format("SELECT name, type FROM `%s` WHERE table_id = `%s`;", SpecialTable.META_COL, tableId));
+            int tableId = tables[i];
+            SQLResult colInfo = dbConn.queryFor(String.format("SELECT name, type FROM `%s` WHERE table_id = '%s';", SpecialTable.META_COL, tableId));
             String[] columns = colInfo.getCol(colInfo.getColIndex("name"));
             String[] types = colInfo.getCol(colInfo.getColIndex("type"));
-            scanResults[i] = editAttribute.scanTable(tables[i], columns, types);
+            scanResults[i] = editAttribute.scanTable(dbConn.getTableName(tables[i]), columns, types);
         }
         response.setTableInfos(scanResults);
         return ResponseEntity.ok(response);

@@ -55,10 +55,10 @@ public class EditAttribute {
 
         ColumnInfo[] columnInfos = new ColumnInfo[columns.length];
         for(int i = 0; i < columnInfos.length; ++i) {
-            String normalSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` RLIKE '%s'", columns[i], columns[i], PAT_NORMAL);
-            String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = 0", columns[i], columns[i]);
+            String normalSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` RLIKE '%s'", table, columns[i], PAT_NORMAL);
+            String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = 0", table, columns[i]);
             String columnSQL = String.format(
-                "SELECT (%s) Normal, (%s) Zero, COUNT(`%s`) NotNull, COUNT(DISTINCT `%s`) Distinct, MIN(`%s`) Min, MAX(`%s`) Max FROM `%s`;",
+                "SELECT (%s) `Normal`, (%s) Zero, COUNT(`%s`) `NotNull`, COUNT(DISTINCT `%s`) `Distinct`, MIN(`%s`) `Min`, MAX(`%s`) `Max` FROM `%s`;",
                 normalSQL, zeroSQL, columns[i], columns[i], columns[i], columns[i], table
             );
             SQLResult cInfoRes = dbConnector.queryFor(columnSQL);

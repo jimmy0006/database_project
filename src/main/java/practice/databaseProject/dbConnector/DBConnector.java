@@ -17,6 +17,7 @@ public interface DBConnector extends AutoCloseable {
     boolean queryExecBatch(String... qStrings);
 
     int queryTableId(String tableName);
+    int[] queryAllTableId();
     String getTableName(int tableId);
 
     /*

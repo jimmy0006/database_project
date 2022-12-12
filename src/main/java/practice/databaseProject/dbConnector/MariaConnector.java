@@ -83,6 +83,7 @@ public class MariaConnector implements DBConnector {
             ResultSet rs = stmt.executeQuery(qString)) {
             return new SQLResult(rs);
         } catch(SQLException e) {
+            System.err.println(qString);
             e.printStackTrace(System.err);
             return null;
         }
@@ -123,6 +124,21 @@ public class MariaConnector implements DBConnector {
         int id = Integer.parseInt(r.getRow(0)[0]);
         tableKeys.put(id, tableName);
         return id;
+    }
+
+    @Override
+    public int[] queryAllTableId() {
+        SQLResult r = queryFor(String.format("SELECT id, name FROM `%s`;", SpecialTable.META_TABLE));
+        if(r == null) return new int[]{};
+        int[] ids = new int[r.getRowCount()];
+        int idCol = r.getColIndex("id");
+        int nameCol = r.getColIndex("name");
+        for (int i = 0; i < ids.length; i++) {
+            String[] row = r.getRow(i);
+            ids[i] = Integer.parseInt(row[idCol]);
+            tableKeys.put(ids[i], row[nameCol]);
+        }
+        return ids;
     }
 
     /** Non-negative tableId that did not come from queryTableId will return null */
