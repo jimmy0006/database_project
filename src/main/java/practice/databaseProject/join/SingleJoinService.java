@@ -5,10 +5,6 @@ import org.springframework.stereotype.Component;
 import practice.databaseProject.dbConnector.DBConnector;
 import practice.databaseProject.dto.JoinResult;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 @Component
 @RequiredArgsConstructor
 public class SingleJoinService {

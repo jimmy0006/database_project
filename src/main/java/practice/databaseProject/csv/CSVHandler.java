@@ -3,16 +3,15 @@ package practice.databaseProject.csv;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
 public interface CSVHandler {
 
-    public String[] columnFromCSV(Path path);
+    String[] columnFromCSV(Path path);
 
-    public Path saveFile(MultipartFile file);
-    public boolean loadCSV(Path path);
-    public Resource exportCSV(String tableName) throws IOException;
-    public boolean saveAsCSV(String tableName) throws IOException;
+    Path saveFile(MultipartFile file);
+    boolean loadCSV(Path path);
+    Resource exportCSV(String tableName) throws IOException;
+    boolean saveAsCSV(String tableName) throws IOException;
 }

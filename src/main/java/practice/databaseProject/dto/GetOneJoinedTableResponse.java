@@ -2,8 +2,6 @@ package practice.databaseProject.dto;
 
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 public class GetOneJoinedTableResponse {
 

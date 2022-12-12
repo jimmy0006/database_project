@@ -5,7 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.sql.*;
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 public final class SQLView {
     private static final List<Integer> INTEGER_TYPES = Arrays.asList(

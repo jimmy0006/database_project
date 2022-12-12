@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import practice.databaseProject.dbConnector.DBConnector;
 import practice.databaseProject.dto.ColumnInfo;
-import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.dto.TableInfo;
-import practice.databaseProject.entity.SQLResult;
-import practice.databaseProject.entity.SpecialTable;
+import practice.databaseProject.entity.*;
 
 @Service
 @RequiredArgsConstructor
