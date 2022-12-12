@@ -47,6 +47,7 @@ public class MultipleJoinService {
 
     }
 
+
     public void initialize(String table_name, String table_column, List<String> table_names, List<String> table_columns, String combined_column) {
         this.table_name = table_name;
         this.table_column = table_column;

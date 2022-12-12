@@ -24,6 +24,7 @@ public class Controller {
     private final JoinService joinService;
     private final CSVHandler csvReader;
     private final MultipleJoinService multipleJoinService;
+    private final SingleJoinService singleJoinService;
     private final DBConnector dbConn;
     private final EditAttribute editAttribute;
     private final StandardRepresentativeAttributeDictionary standardRepresentativeAttributeDictionary;
@@ -65,24 +66,43 @@ public class Controller {
         return new ResponseEntity<>(resource,headers, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/jointables")
-    public ResponseEntity<Void> joinTables(@RequestBody JoinTableRequest joinTableRequest) throws Exception {
-        String table_name = joinTableRequest.getTable_name();
-        String table_column = joinTableRequest.getTable_column();
-        List<String> table_names = joinTableRequest.getTable_names();
-        List<String> table_columns = joinTableRequest.getTable_columns();
-        String combined_column = joinTableRequest.getTable_column();
+    @PostMapping(value = "/joinonetable")
+    public ResponseEntity<Void> joinOneTable(@RequestBody JoineOneTableRequest joineOneTableRequest) throws Exception {
+        String table1_name = joineOneTableRequest.getTable1Name();
+        String table1_column = joineOneTableRequest.getTable1Column();
+        String table2_name = joineOneTableRequest.getTable2Name();
+        String table2_column = joineOneTableRequest.getTable2Column();
+        String combined_column = joineOneTableRequest.getCombinedColumn();
 
-        joinService.innerJoin(table_name, table_column, table_names, table_columns, combined_column);
+        joinService.innerJoin(table1_name, table1_column, table2_name, table2_column, combined_column);
 
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/getjoinedtable")
-    public ResponseEntity<GetJoinedTableResponse> getJoinedTable() {
+    @PostMapping(value = "/joinmultipletable")
+    public ResponseEntity<Void> joinMultipleTable(@RequestBody JoinMultipleTableRequest joinMultipleTableRequest) throws Exception {
+        String table_name = joinMultipleTableRequest.getTableName();
+        String table_column = joinMultipleTableRequest.getTableColumn();
+        List<String> table_names = joinMultipleTableRequest.getTableNames();
+        List<String> table_columns = joinMultipleTableRequest.getTableColumns();
+        String combined_column = joinMultipleTableRequest.getCombinedColumn();
+
+        joinService.multipleInnerJoin(table_name, table_column, table_names, table_columns, combined_column);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/getmultiplejoinedtable")
+    public ResponseEntity<GetMultipleJoinedTableResponse> getMultipleJoinedTable() {
         List<JoinResult> joinResults = multipleJoinService.getInfo();
-        GetJoinedTableResponse getJoinedTableResponse = new GetJoinedTableResponse(joinResults);
-        return ResponseEntity.ok(getJoinedTableResponse);
+        GetMultipleJoinedTableResponse getMultipleJoinedTableResponse = new GetMultipleJoinedTableResponse(joinResults);
+        return ResponseEntity.ok(getMultipleJoinedTableResponse);
+    }
+    @PostMapping(value = "/getonejoinedtable")
+    public ResponseEntity<GetOneJoinedTableResponse> getOneJoinedTable() {
+        JoinResult joinResult = singleJoinService.getInfo();
+        GetOneJoinedTableResponse getOneJoinedTableResponse = new GetOneJoinedTableResponse(joinResult);
+        return ResponseEntity.ok(getOneJoinedTableResponse);
     }
 
     @GetMapping(value = "/editattribute")
