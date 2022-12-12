@@ -96,6 +96,7 @@ public class Controller {
             String[] types = colInfo.getCol(colInfo.getColIndex("type"));
             scanResults[i] = editAttribute.scanTable(tables[i], columns, types);
         }
+        response.setTableInfos(scanResults);
         return ResponseEntity.ok(response);
     }
 
