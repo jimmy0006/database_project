@@ -1,6 +1,6 @@
 package practice.databaseProject.dbConnector;
 
-import practice.databaseProject.entity.SQLResult;
+import practice.databaseProject.entity.SQLView;
 
 import java.sql.SQLException;
 
@@ -13,7 +13,7 @@ public interface DBConnector extends AutoCloseable {
     void getSetting(String userName,String password,String address) throws ClassNotFoundException, SQLException;
 
     boolean queryExec(String qString);
-    SQLResult queryFor(String qString);
+    SQLView queryFor(String qString);
     boolean queryExecAll(String... qStrings);
 
     int queryTableId(String tableName);

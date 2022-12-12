@@ -49,14 +49,14 @@ public class SingleJoinService {
         String table2_count_query = "SELECT COUNT(*) FROM " + table2_name;
         String combined_count_query = "SELECT COUNT(*) FROM " + combined_name;
 
-        int table_num_records = Integer.parseInt(dbConnector.queryFor(table1_count_query).getRow(0)[0]);
-        int table2_num_records = Integer.parseInt(dbConnector.queryFor(table2_count_query).getRow(0)[0]);
+        int table_num_records = dbConnector.queryFor(table1_count_query).getColumn(0).getIntegers().get(0);
+        int table2_num_records = dbConnector.queryFor(table2_count_query).getColumn(0).getIntegers().get(0);
 
         float table_success_rate, table2_success_rate;
         int combined_num_records;
         String completion;
         if (isComplete) {
-            combined_num_records = Integer.parseInt(dbConnector.queryFor(combined_count_query).getRow(0)[0]);
+            combined_num_records = dbConnector.queryFor(combined_count_query).getColumn(0).getIntegers().get(0);
             table_success_rate = (float) combined_num_records/table_num_records;
             table2_success_rate = (float) combined_num_records/table2_num_records;
             completion = "완료";

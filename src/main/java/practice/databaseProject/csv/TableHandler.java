@@ -6,13 +6,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import practice.databaseProject.dbConnector.DBConnector;
-import practice.databaseProject.entity.SQLResult;
-import practice.databaseProject.entity.SQLType;
-import practice.databaseProject.entity.SpecialTable;
+import practice.databaseProject.entity.*;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,13 +72,13 @@ public class TableHandler implements CSVHandler {
                 "IGNORE 1 LINES;"
         );
 
-        String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), tableName);
+        String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE, tableName);
         if(!dbConn.queryExecAll(createQuery, loadQuery, registerTableQuery)) return false;
 
         int tId = dbConn.queryTableId(tableName);
         for(int i = 0; i < queryComponent.length; ++i) {
             // (table id, column name, type) -> type = TEXT
-            queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], SQLType.TEXT.toString());
+            queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], SQLType.TEXT);
         }
         String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", queryComponent));
         return dbConn.queryExec(registerColumnsQuery);
@@ -99,14 +99,11 @@ public class TableHandler implements CSVHandler {
         Files.createDirectories(localPathOut);
         Path path = localPathOut.resolve(tableName);
         int id = dbConn.queryTableId(tableName);
-        SQLResult sqlResult = dbConn.queryFor(String.format("SELECT name FROM %s WHERE table_id='%d'",SpecialTable.META_COL, id));
-        String[] col = sqlResult.getCol(0);
-        String columnName="";
-        for (String s : col) {
-            columnName+="'"+s+"',";
-        }
+        SQLView sqlResult = dbConn.queryFor(String.format("SELECT name FROM %s WHERE table_id='%d'",SpecialTable.META_COL, id));
+        List<String> col = sqlResult.getColumn(0).getStrings();
+        String columnName = col.stream().map(s -> "'" + s + "'").collect(Collectors.joining(","));
         String exportQuery = String.join("\n",
-                String.format("SELECT %s UNION ALL SELECT %s FROM %s",columnName.substring(0, columnName.length() - 1),columnName.substring(0, columnName.length() - 1).replace('\'',' '), tableName),
+                String.format("SELECT %s UNION ALL SELECT %s FROM %s",columnName,columnName.replace('\'',' '), tableName),
                 String.format("INTO OUTFILE '%s.csv'", path.toString()).replace("\\","/"),
                 "character set euckr",
                 "FIELDS ENCLOSED BY '\"'",

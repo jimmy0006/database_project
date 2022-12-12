@@ -123,7 +123,8 @@ public final class SQLView {
     public int getColumnCount() {return data.size();}
 
     public RowView getRow(int index) {return new RowView(index);}
-    public ColumnView getColumn(String column) {return data.getOrDefault(column, null);}
+    public ColumnView getColumn(String column) {return column == null ? null : data.getOrDefault(column, null);}
+    public ColumnView getColumn(int index) {return getColumn(data.keySet().stream().skip(index).findFirst().orElse(null));}
 
     public Map<String, ColumnView> getColumns() {return Collections.unmodifiableMap(data);}
     public Stream<RowView> rowStream() {return IntStream.range(0, records).mapToObj(RowView::new);}

@@ -7,6 +7,8 @@ import practice.databaseProject.editAttribute.EditAttribute;
 import practice.databaseProject.entity.SQLType;
 import practice.databaseProject.entity.SpecialTable;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TableAnalyzerImpl implements TableAnalyzer {
@@ -15,12 +17,14 @@ public class TableAnalyzerImpl implements TableAnalyzer {
 
     /** Expects @param columns to be in order of table schema */
     @Override
-    public AnalyzeResult analyze(int tableId, String[] columns) {
+    public AnalyzeResult analyze(int tableId, Iterable<String> columns) {
         AnalyzeResult result = new AnalyzeResult();
 
         for(String col : columns) {
-            String[] data = dbConn.queryFor(String.format("SELECT DISTINCT(%s) FROM %s;", col, dbConn.getTableName(tableId))).getCol(0);
             // data may be null if SQLException but is not handled... Could lead to NullPointerException
+            List<String> data = dbConn.queryFor(String.format("SELECT DISTINCT(%s) FROM %s;", col, dbConn.getTableName(tableId)))
+                    .getColumn(0).getStrings();
+
             boolean isInteger = true, isReal = true, hasDecimal = false;
             int nullCount = 0;
             row: for(String e : data) {
@@ -54,7 +58,7 @@ public class TableAnalyzerImpl implements TableAnalyzer {
             }
 
             SQLType type = isInteger ? SQLType.INTEGER : isReal ? SQLType.DOUBLE : SQLType.TEXT;
-            result.setColumn(col, type, nullCount, data.length);
+            result.setColumn(col, type, nullCount, data.size());
         }
 
         return result;

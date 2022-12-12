@@ -5,7 +5,6 @@ import practice.databaseProject.analyze.TableAnalyzer;
 import practice.databaseProject.analyze.TableAnalyzerImpl;
 import practice.databaseProject.dbConnector.*;
 import practice.databaseProject.editAttribute.EditAttribute;
-import practice.databaseProject.entity.SQLResult;
 import practice.databaseProject.entity.SpecialTable;
 
 import java.util.Arrays;
@@ -19,11 +18,6 @@ public class ResetDB {
             "5_bank_marketing"
     );
 
-    public static void printSQL(SQLResult res) {
-        System.out.println(Arrays.toString(res.getColNames()));
-        res.rowStream().map(Arrays::toString).forEach(System.out::println);
-    }
-
     // DB connection setting
     static final String USERNAME = "root";
     static final String PASSWORD = "root";
@@ -36,9 +30,9 @@ public class ResetDB {
             dbConn.getSetting(USERNAME, PASSWORD, IP_ADDR);
 
             // Get tables currently loaded into DB
-            String[] existingTables = dbConn.queryFor(String.format(
+            List<String> existingTables = dbConn.queryFor(String.format(
                     "SELECT TABLE_NAME FROM %s WHERE TABLE_SCHEMA = '%s';", SpecialTable.INFO_TABLE, DB_SCOPE
-            )).getCol(0);
+            )).getColumn(0).getStrings();
 
             // Re-generate DB
             // dropTables(dbConn, existingTables); // Drop every table
@@ -54,7 +48,7 @@ public class ResetDB {
         }
     }
 
-    public static <T> void dropTables(DBConnector dbConn, T... tables) {
+    public static void dropTables(DBConnector dbConn, Object... tables) {
         String[] queries = new String[tables.length + 2];
         queries[0] = "SET FOREIGN_KEY_CHECKS = 0;";
         queries[queries.length - 1] = "SET FOREIGN_KEY_CHECKS = 1;";
@@ -87,7 +81,7 @@ public class ResetDB {
         dbConn.queryExecAll(metaTable, metaColumn);
     }
 
-    public static void analyzeLoaded(DBConnector dbConn, String[] existingTables) {
+    public static void analyzeLoaded(DBConnector dbConn, List<String> existingTables) {
         EditAttribute attrEditor = new EditAttribute(dbConn);
         TableAnalyzer analyzer = new TableAnalyzerImpl(dbConn, attrEditor);
 
@@ -96,19 +90,19 @@ public class ResetDB {
             if(SpecialTable.META_TABLE.toString().equals(table) || SpecialTable.META_COL.toString().equals(table)) continue;
 
             // Get column names of table
-            String[] columns = dbConn.queryFor(String.format(
+            List<String> columns = dbConn.queryFor(String.format(
                     "SELECT COLUMN_NAME FROM %s WHERE TABLE_NAME = '%s';", SpecialTable.INFO_COL, table
-            )).getCol(0);
+            )).getColumn(0).getStrings();
 
             // Add to META_TABLE
-            dbConn.queryExec(String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE.toString(), table));
+            dbConn.queryExec(String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE, table));
 
             // Get table ID
             int tId = dbConn.queryTableId(table);
 
             // Update column info
             AnalyzeResult columnInfo = analyzer.analyze(tId, columns);
-            String[] metaColSQL = Arrays.stream(columns)
+            String[] metaColSQL = columns.stream()
                     .map(col -> String.format("(%s, '%s', '%s', null, null)", tId, col, columnInfo.getType(col)))
                     .toArray(String[]::new);
             dbConn.queryExec(String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", metaColSQL)));

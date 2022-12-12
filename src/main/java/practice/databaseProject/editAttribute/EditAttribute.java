@@ -7,6 +7,8 @@ import practice.databaseProject.dto.ColumnInfo;
 import practice.databaseProject.dto.TableInfo;
 import practice.databaseProject.entity.*;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class EditAttribute {
@@ -33,44 +35,44 @@ public class EditAttribute {
     */
 
     /** columns[i] paired with columnTypes[i] */
-    public TableInfo scanTable(String table, String[] columns, String[] columnTypes) {
+    public TableInfo scanTable(String table, List<String> columns, List<String> columnTypes) {
         TableInfo result = new TableInfo();
         result.setName(table);
         // 1 type info: get row count and column types
         String tableInfoQuery = String.format("SELECT COUNT(*) FROM `%s`;", SpecialTable.META_TABLE, table, table);
-        SQLResult tInfoRes = dbConnector.queryFor(tableInfoQuery);
+        SQLView tInfoRes = dbConnector.queryFor(tableInfoQuery);
         if(tInfoRes == null) {
             result.setCount(-1);
             result.setColumns(null);
             return result;
         }
-        int rows = Integer.parseInt(tInfoRes.getRow(0)[0]);
+        int rows = tInfoRes.getColumn(0).getIntegers().get(0);
         result.setCount(rows);
 
-        ColumnInfo[] columnInfos = new ColumnInfo[columns.length];
+        ColumnInfo[] columnInfos = new ColumnInfo[columns.size()];
         for(int i = 0; i < columnInfos.length; ++i) {
-            String normalSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` RLIKE '%s'", table, columns[i], PAT_NORMAL);
-            String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = 0", table, columns[i]);
+            String normalSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` RLIKE '%s'", table, columns.get(i), PAT_NORMAL);
+            String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = 0", table, columns.get(i));
             String columnSQL = String.format(
                 "SELECT (%s) `Normal`, (%s) Zero, COUNT(`%s`) `NotNull`, COUNT(DISTINCT `%s`) `Distinct`, MIN(`%s`) `Min`, MAX(`%s`) `Max` FROM `%s`;",
-                normalSQL, zeroSQL, columns[i], columns[i], columns[i], columns[i], table
+                normalSQL, zeroSQL, columns.get(i), columns.get(i), columns.get(i), columns.get(i), table
             );
-            SQLResult cInfoRes = dbConnector.queryFor(columnSQL);
+            SQLView cInfoRes = dbConnector.queryFor(columnSQL);
             if(cInfoRes == null) {
                 columnInfos[i] = null;
                 continue;
             }
-            String[] cInfo = cInfoRes.getRow(0);
+            // String[] cInfo = cInfoRes.getRow(0);
             ColumnInfo columnInfo = new ColumnInfo();
-            int normal = Integer.parseInt(cInfo[cInfoRes.getColIndex("Normal")]);
-            int zero = Integer.parseInt(cInfo[cInfoRes.getColIndex("Zero")]);
-            int notNull = Integer.parseInt(cInfo[cInfoRes.getColIndex("NotNull")]);
-            int distinct = Integer.parseInt(cInfo[cInfoRes.getColIndex("Distinct")]);
-            String min = cInfo[cInfoRes.getColIndex("Min")];
-            String max = cInfo[cInfoRes.getColIndex("Max")];
+            int normal = cInfoRes.getColumn("Normal").getIntegers().get(0);
+            int zero = cInfoRes.getColumn("Zero").getIntegers().get(0);
+            int notNull = cInfoRes.getColumn("NotNull").getIntegers().get(0);
+            int distinct = cInfoRes.getColumn("Distinct").getIntegers().get(0);
+            String min = cInfoRes.getColumn("Min").getStrings().get(0);
+            String max = cInfoRes.getColumn("Max").getStrings().get(0);
 
-            columnInfo.setName(columns[i]);
-            columnInfo.setType(columnTypes[i]);
+            columnInfo.setName(columns.get(i));
+            columnInfo.setType(columnTypes.get(i));
             columnInfo.setMax(max);
             columnInfo.setMin(min);
             columnInfo.setDistinctCount(distinct);

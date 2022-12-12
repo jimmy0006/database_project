@@ -112,9 +112,9 @@ public class Controller {
         TableInfo[] scanResults = new TableInfo[tables.length];
         for(int i = 0; i < tables.length; ++i) {
             int tableId = tables[i];
-            SQLResult colInfo = dbConn.queryFor(String.format("SELECT name, type FROM `%s` WHERE table_id = '%s';", SpecialTable.META_COL, tableId));
-            String[] columns = colInfo.getCol(colInfo.getColIndex("name"));
-            String[] types = colInfo.getCol(colInfo.getColIndex("type"));
+            SQLView colInfo = dbConn.queryFor(String.format("SELECT name, type FROM `%s` WHERE table_id = '%s';", SpecialTable.META_COL, tableId));
+            List<String> columns = colInfo.getColumn("name").getStrings();
+            List<String> types = colInfo.getColumn("type").getStrings();
             scanResults[i] = editAttribute.scanTable(dbConn.getTableName(tables[i]), columns, types);
         }
         response.setTableInfos(scanResults);
@@ -151,7 +151,7 @@ public class Controller {
     @PostMapping(value = "/setrepresentativeattribute")
     public ResponseEntity<Void> setRepresentativeAttribute(@RequestBody SetRepresentativeAttributeRequest setRepresentativeAttributeRequest) throws Exception {
         String query = String.format("UPDATE %s SET representativeAttribute = %s WHERE table_id = '%s', name = '%s';",
-                SpecialTable.META_COL.toString(), setRepresentativeAttributeRequest.getRepresentativeAttribute(),
+                SpecialTable.META_COL, setRepresentativeAttributeRequest.getRepresentativeAttribute(),
                 setRepresentativeAttributeRequest.getTableId(), setRepresentativeAttributeRequest.getColumnName()
         );
         dbConn.queryExec(query);
@@ -160,7 +160,7 @@ public class Controller {
     @PostMapping(value = "/setrepresentativecombinekey")
     public ResponseEntity<Void> setRepresentativeCombineKey(@RequestBody SetRepresentativeCombineKeyRequest setRepresentativeCombineKeyRequest) throws Exception {
         String query = String.format("UPDATE %s SET representativeCombineKey = %s WHERE table_id = '%s', name = '%s'",
-                SpecialTable.META_COL.toString(), setRepresentativeCombineKeyRequest.getRepresentativeCombineKey(),
+                SpecialTable.META_COL, setRepresentativeCombineKeyRequest.getRepresentativeCombineKey(),
                 setRepresentativeCombineKeyRequest.getTableId(), setRepresentativeCombineKeyRequest.getColumnName()
         );
         dbConn.queryExec(query);

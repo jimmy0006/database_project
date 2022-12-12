@@ -1,7 +1,7 @@
 package practice.databaseProject.dbConnector;
 
 import org.springframework.stereotype.Component;
-import practice.databaseProject.entity.SQLResult;
+import practice.databaseProject.entity.SQLView;
 import practice.databaseProject.entity.SpecialTable;
 import java.util.*;
 
@@ -78,10 +78,10 @@ public class MariaConnector implements DBConnector {
     }
 
     @Override
-    public SQLResult queryFor(String qString) {
+    public SQLView queryFor(String qString) {
         try(Statement stmt = dbConn.createStatement();
             ResultSet rs = stmt.executeQuery(qString)) {
-            return new SQLResult(rs);
+            return new SQLView(rs);
         } catch(SQLException e) {
             System.err.println(qString);
             e.printStackTrace(System.err);
@@ -101,25 +101,25 @@ public class MariaConnector implements DBConnector {
     public int queryTableId(String tableName) {
         if(tableName == null) return -1;
 
-        SQLResult r = queryFor(String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE, tableName));
+        SQLView r = queryFor(String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE, tableName));
         if (r == null) return -1;
 
-        int id = Integer.parseInt(r.getRow(0)[0]);
+        int id = r.getColumn("id").getIntegers().get(0);
         tableKeys.put(id, tableName);
         return id;
     }
 
     @Override
     public int[] queryAllTableId() {
-        SQLResult r = queryFor(String.format("SELECT id, name FROM `%s`;", SpecialTable.META_TABLE));
+        SQLView r = queryFor(String.format("SELECT id, name FROM `%s`;", SpecialTable.META_TABLE));
         if(r == null) return new int[]{};
         int[] ids = new int[r.getRowCount()];
-        int idCol = r.getColIndex("id");
-        int nameCol = r.getColIndex("name");
+
+        List<Integer> tableIds = r.getColumn("id").getIntegers();
+        List<String> tableNames = r.getColumn("name").getStrings();
         for (int i = 0; i < ids.length; i++) {
-            String[] row = r.getRow(i);
-            ids[i] = Integer.parseInt(row[idCol]);
-            tableKeys.put(ids[i], row[nameCol]);
+            ids[i] = tableIds.get(i);
+            tableKeys.put(ids[i], tableNames.get(i));
         }
         return ids;
     }
