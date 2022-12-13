@@ -107,7 +107,7 @@ public class MariaConnector implements DBConnector {
         SQLView r = queryFor(String.format("SELECT id FROM %s WHERE name='%s';", SpecialTable.META_TABLE, tableName));
         if (r == null) return -1;
 
-        int id = r.getColumn("id").getIntegers().get(0);
+        int id = r.getColumn("id").getInt(0);
         tableKeys.put(id, tableName);
         return id;
     }

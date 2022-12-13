@@ -19,7 +19,7 @@ public final class SQLView {
             Types.FLOAT, Types.DOUBLE, Types.DECIMAL
     );
 
-    private final Map<String, ColumnView> data;
+    private final Map<String, ColumnView> table;
     private int records;
 
     @SuppressWarnings("unchecked")
@@ -33,7 +33,7 @@ public final class SQLView {
         public String toString() {return String.format("(%s) %s = %s", type, name, data);}
         public int size() {return data.size();}
 
-        public List<Object> get() {return Collections.unmodifiableList(data);}
+        public List<Object> getObjects() {return Collections.unmodifiableList(data);}
         public List<Integer> getIntegers() {
             return type == SQLType.INTEGER ? Collections.unmodifiableList((List<Integer>) (List) data) : Collections.emptyList();
         }
@@ -43,34 +43,27 @@ public final class SQLView {
         public List<String> getStrings() {
             return type == SQLType.TEXT ? Collections.unmodifiableList((List<String>) (List) data) : Collections.emptyList();
         }
+
+        public Object get(int row) {return data.get(row);}
+        public int getInt(int row) {return type == SQLType.INTEGER ? (int) data.get(row) : Integer.MAX_VALUE;}
+        public double getDouble(int row) {return type == SQLType.DOUBLE ? (double) data.get(row) : Double.NaN;}
+        public String getString(int row) {return type == SQLType.TEXT ? (String) data.get(row) : null;}
     }
 
     @RequiredArgsConstructor
     public class RowView {
         final int row;
 
-        public Object get(String column) {
-            if(data.containsKey(column)) return data.get(column).data.get(row);
-            return null;
-        }
-        public int getInt(String column) {
-            Object o = this.get(column);
-            return o instanceof Integer ? (Integer) o : Integer.MAX_VALUE;
-        }
-        public double getDouble(String column) {
-            Object o = this.get(column);
-            return o instanceof Double ? (Double) o : Double.NaN;
-        }
-        public String getString(String column) {
-            Object o = this.get(column);
-            return o instanceof String ? (String) o : null;
-        }
+        public Object get(String column) {return table.containsKey(column) ? table.get(column).get(row) : null;}
+        public int getInt(String column) {return table.containsKey(column) ? table.get(column).getInt(row) : Integer.MAX_VALUE;}
+        public double getDouble(String column) {return table.containsKey(column) ? table.get(column).getDouble(row) : Double.NaN;}
+        public String getString(String column) {return table.containsKey(column) ? table.get(column).getString(row) : null;}
 
         @Override
         public String toString() {
-            Object[] tmp = new Object[data.size()];
+            Object[] tmp = new Object[table.size()];
             int i = 0;
-            for(ColumnView column : data.values()) {
+            for(ColumnView column : table.values()) {
                 tmp[i] = column.data.get(row);
                 ++i;
             }
@@ -79,14 +72,14 @@ public final class SQLView {
     }
 
     public SQLView(ResultSet queryRes) throws SQLException {
-        data = new LinkedHashMap<>();
+        table = new LinkedHashMap<>();
 
         // Extract column info
         ResultSetMetaData queryMeta = queryRes.getMetaData();
         int columnCount = queryMeta.getColumnCount();
         for (int i = 1; i <= columnCount; i++) {    // SQL is 1-indexed
             String column = queryMeta.getColumnLabel(i);
-            if(data.containsKey(column)) {
+            if(table.containsKey(column)) {
                 throw new SQLException("Column name collision. Use column alias in your SQL query!");
             }
 
@@ -99,14 +92,14 @@ public final class SQLView {
                 "Unsupported column type for `%s`: %s - Refer to %s\n", column, typeConstant,
                 "https://docs.oracle.com/en/java/javase/11/docs/api/constant-values.html#java.sql.Types"
             ));
-            data.put(column, new ColumnView(column, type, new ArrayList<>()));
+            table.put(column, new ColumnView(column, type, new ArrayList<>()));
         }
 
         // Save query result
         records = 0;
         while(queryRes.next()) {
             records += 1;
-            for(ColumnView view : data.values()) {
+            for(ColumnView view : table.values()) {
                 Object o;
                 switch(view.type) {
                     case INTEGER: o = queryRes.getInt(view.name); break;
@@ -120,15 +113,15 @@ public final class SQLView {
     }
 
     public int getRowCount() {return records;}
-    public int getColumnCount() {return data.size();}
+    public int getColumnCount() {return table.size();}
 
     public RowView getRow(int index) {return new RowView(index);}
-    public ColumnView getColumn(String column) {return column == null ? null : data.getOrDefault(column, null);}
-    public ColumnView getColumn(int index) {return getColumn(data.keySet().stream().skip(index).findFirst().orElse(null));}
+    public ColumnView getColumn(String column) {return column == null ? null : table.getOrDefault(column, null);}
+    public ColumnView getColumn(int index) {return index < 0 ? null : getColumn(table.keySet().stream().skip(index).findFirst().orElse(null));}
 
-    public Map<String, ColumnView> getColumns() {return Collections.unmodifiableMap(data);}
+    public Map<String, ColumnView> getColumns() {return Collections.unmodifiableMap(table);}
     public Stream<RowView> rowStream() {return IntStream.range(0, records).mapToObj(RowView::new);}
 
     @Override
-    public String toString() {return data.toString();}
+    public String toString() {return table.toString();}
 }

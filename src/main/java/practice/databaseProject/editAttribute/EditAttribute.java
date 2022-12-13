@@ -46,7 +46,7 @@ public class EditAttribute {
             result.setColumns(null);
             return result;
         }
-        int rows = tInfoRes.getColumn(0).getIntegers().get(0);
+        int rows = tInfoRes.getColumn(0).getInt(0);
         result.setCount(rows);
 
         ColumnInfo[] columnInfos = new ColumnInfo[columns.size()];
@@ -64,12 +64,12 @@ public class EditAttribute {
             }
             // String[] cInfo = cInfoRes.getRow(0);
             ColumnInfo columnInfo = new ColumnInfo();
-            int normal = cInfoRes.getColumn("Normal").getIntegers().get(0);
-            int zero = cInfoRes.getColumn("Zero").getIntegers().get(0);
-            int notNull = cInfoRes.getColumn("NotNull").getIntegers().get(0);
-            int distinct = cInfoRes.getColumn("Distinct").getIntegers().get(0);
-            String min = cInfoRes.getColumn("Min").getStrings().get(0);
-            String max = cInfoRes.getColumn("Max").getStrings().get(0);
+            int normal = cInfoRes.getColumn("Normal").getInt(0);
+            int zero = cInfoRes.getColumn("Zero").getInt(0);
+            int notNull = cInfoRes.getColumn("NotNull").getInt(0);
+            int distinct = cInfoRes.getColumn("Distinct").getInt(0);
+            String min = cInfoRes.getColumn("Min").getString(0);
+            String max = cInfoRes.getColumn("Max").getString(0);
 
             columnInfo.setName(columns.get(i));
             columnInfo.setType(columnTypes.get(i));
