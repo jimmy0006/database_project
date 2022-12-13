@@ -5,12 +5,15 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import practice.databaseProject.analyze.AnalyzeResult;
+import practice.databaseProject.analyze.TableAnalyzer;
 import practice.databaseProject.dbConnector.DBConnector;
 import practice.databaseProject.entity.*;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TableHandler implements CSVHandler {
     private final DBConnector dbConn;
+    private final TableAnalyzer analyzer;
 
     private Path localPathIn = Path.of(".", "csv").toAbsolutePath().normalize();
     private Path localPathOut = Path.of("C:\\Program Files\\MariaDB 10.6\\data\\result\\").toAbsolutePath().normalize();
@@ -76,9 +80,13 @@ public class TableHandler implements CSVHandler {
         if(!dbConn.queryExecAll(createQuery, loadQuery, registerTableQuery)) return false;
 
         int tId = dbConn.queryTableId(tableName);
+        AnalyzeResult analyzeData = analyzer.analyze(tId, Arrays.asList(columns));
+
         for(int i = 0; i < queryComponent.length; ++i) {
+            SQLType type = analyzeData.getType(columns[i]);
+            boolean cast = dbConn.queryExec(String.format("ALTER TABLE `%s` MODIFY `%s` %s;", tableName, columns[i], type));
             // (table id, column name, type) -> type = TEXT
-            queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], SQLType.TEXT);
+            queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], cast ? type : SQLType.TEXT);
         }
         String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", queryComponent));
         return dbConn.queryExec(registerColumnsQuery);

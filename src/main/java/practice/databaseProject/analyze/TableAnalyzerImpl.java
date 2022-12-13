@@ -64,16 +64,4 @@ public class TableAnalyzerImpl implements TableAnalyzer {
         return result;
     }
 
-    @Override
-    public boolean update(int tableId, AnalyzeResult info) {
-        for(String column : info.getColumns()) {
-            if(!tableEditor.cast(tableId, column, info.getType(column))) return false;
-
-            if(!dbConn.queryExec(String.format(
-                    "UPDATE %s SET %s = '%s' WHERE table_id = '%s' and name = '%s';",
-                    SpecialTable.META_COL, "type", info.getType(column), tableId, column
-            ))) return false;
-        }
-        return true;
-    }
 }
