@@ -27,7 +27,7 @@ public class ResetDB {
 
     public static void main(String[] args) {
         try(DBConnector dbConn = new MariaConnector()) {
-            dbConn.getSetting(USERNAME, PASSWORD, IP_ADDR);
+            dbConn.connect(USERNAME, PASSWORD, IP_ADDR);
 
             // Get tables currently loaded into DB
             List<String> existingTables = dbConn.queryFor(String.format(

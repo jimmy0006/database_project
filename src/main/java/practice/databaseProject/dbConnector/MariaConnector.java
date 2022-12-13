@@ -22,10 +22,7 @@ public class MariaConnector implements DBConnector {
             throw new RuntimeException("MariaConnector::setUp was called when a connection already exists.");
         }
 
-        Class.forName("org.mariadb.jdbc.Driver");
-        dbConn = DriverManager.getConnection(
-                "jdbc:mariadb://" + address, userName, password
-        );
+        connect(userName, password, address);
 
         String metaTable = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
                 "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n" +
@@ -49,9 +46,9 @@ public class MariaConnector implements DBConnector {
     }
 
     @Override
-    public void getSetting(String userName,String password,String address) throws ClassNotFoundException, SQLException{
+    public void connect(String userName, String password, String address) throws ClassNotFoundException, SQLException{
         if(dbConn != null) {
-            throw new RuntimeException("MariaConnector::getSetting was called when a connection already exists.");
+            throw new RuntimeException("MariaConnector::connect was called when a connection already exists.");
         }
 
         Class.forName("org.mariadb.jdbc.Driver");
@@ -74,6 +71,7 @@ public class MariaConnector implements DBConnector {
             ResultSet rs = stmt.executeQuery(qString)) {
             return true;
         } catch(SQLException e) {
+            System.err.println(qString);
             e.printStackTrace(System.err);
             return false;
         }
