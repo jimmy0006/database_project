@@ -160,7 +160,7 @@ public class Controller {
     public ResponseEntity<Void> setRepresentativeCombineKey(@RequestBody SetRepresentativeCombineKeyRequest setRepresentativeCombineKeyRequest) throws Exception {
         String query = String.format("UPDATE %s SET representativeCombineKey = %s WHERE table_id = '%s', name = '%s'",
                 SpecialTable.META_COL, setRepresentativeCombineKeyRequest.getRepresentativeCombineKey(),
-                setRepresentativeCombineKeyRequest.getTableId(), setRepresentativeCombineKeyRequest.getColumnName()
+                dbConn.queryTableId(setRepresentativeCombineKeyRequest.getTable()), setRepresentativeCombineKeyRequest.getColumn()
         );
         dbConn.queryExec(query);
         return ResponseEntity.ok().build();
