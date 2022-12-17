@@ -104,7 +104,16 @@ public class TableHandler implements CSVHandler {
             queryComponent[i] = String.format("(%s, '%s', '%s', null, null)", tId, columns[i], cast ? type : SQLType.TEXT);
         }
         String registerColumnsQuery = String.format("INSERT INTO %s VALUES %s", SpecialTable.META_COL, String.join(", ", queryComponent));
-        return dbConn.queryExec(registerColumnsQuery);
+        boolean res=false;
+        try{
+            dbConn.queryExec(registerColumnsQuery);
+            res=true;
+        }catch(Exception e){
+            System.out.println(e);
+        }finally{
+            boolean delete = new File(path.toString()).delete();
+            return (res && delete);
+        }
     }
 
     public Resource exportCSV(String tableName) throws IOException {
