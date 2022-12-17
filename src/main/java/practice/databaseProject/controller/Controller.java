@@ -16,6 +16,7 @@ import practice.databaseProject.join.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,7 +33,6 @@ public class Controller {
 
     @PostMapping(value = "/dbconnect")
     public ResponseEntity<DBConnectionResponse> dbConnect(@RequestBody DBConnectionRequest dbConnectionRequest) {
-        standardRepresentativeAttributeDictionary.init();
         standardCombineKeyDictionary.init();
         String host = dbConnectionRequest.getHost();
         String port = dbConnectionRequest.getPort();
@@ -130,18 +130,18 @@ public class Controller {
     public ResponseEntity<Boolean> deleteTableAttribute(@RequestBody DeleteAttributeRequestDto request){
         return ResponseEntity.ok(editAttribute.deleteAttribute(dbConn.queryTableId(request.getTable()), request.getColumn()));
     }
-    @PostMapping(value = "/getrepresentativeattributes")
-    public ResponseEntity<List<String>> getRepresentativeAttributes() throws Exception {
-        return ResponseEntity.ok(standardRepresentativeAttributeDictionary.values());
+    @GetMapping(value = "/getrepresentativeattributes")
+    public ResponseEntity<Map<String, List<String[]>>> getRepresentativeAttributes() throws Exception {
+        return ResponseEntity.ok(standardRepresentativeAttributeDictionary.getAllCategories());
     }
     @PostMapping(value = "/getcombinekeys")
     public ResponseEntity<List<String>> getCombineKeys() throws Exception {
         return ResponseEntity.ok(standardCombineKeyDictionary.values());
     }
     @PostMapping(value = "/addrepresentativeattribute")
-    public ResponseEntity<Void> addRepresentativeAttribute(@RequestBody AddRepresentativeAttributeRequest addRepresentativeAttributeRequest) throws Exception {
-        standardRepresentativeAttributeDictionary.add(addRepresentativeAttributeRequest.getAttribute());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Boolean> addRepresentativeAttribute(@RequestBody AddRepresentativeAttributeRequest addReprAttrReq) throws Exception {
+        int tableId = dbConn.queryTableId(addReprAttrReq.getTable());
+        return ResponseEntity.ok(standardRepresentativeAttributeDictionary.addToDict(tableId, addReprAttrReq.getColumn(), addReprAttrReq.getAttribute()));
     }
     @PostMapping(value = "/addcombinekey")
     public ResponseEntity<Void> addCombineKey(@RequestBody AddCombineKeyRequest addCombineKeyRequest) throws Exception {
