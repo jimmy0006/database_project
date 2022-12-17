@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class SetRepresentativeAttributeRequest {
-    private String tableName;
-    private String columnName;
+    private String table;
+    private String column;
 }

@@ -149,13 +149,12 @@ public class Controller {
         return ResponseEntity.ok().build();
     }
     @PostMapping(value = "/setrepresentativeattribute")
-    public ResponseEntity<Void> setRepresentativeAttribute(@RequestBody SetRepresentativeAttributeRequest setRepresentativeAttributeRequest) throws Exception {
+    public ResponseEntity<Boolean> setRepresentativeAttribute(@RequestBody SetRepresentativeAttributeRequest setRepresentativeAttributeRequest) throws Exception {
         String query = String.format("UPDATE %s SET representativeAttribute = '%s' WHERE name = '%s';",
-                SpecialTable.META_TABLE, setRepresentativeAttributeRequest.getColumnName(),
-                setRepresentativeAttributeRequest.getTableName()
+                SpecialTable.META_TABLE, setRepresentativeAttributeRequest.getColumn(),
+                setRepresentativeAttributeRequest.getTable()
         );
-        dbConn.queryExec(query);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(dbConn.queryExec(query));
     }
     @PostMapping(value = "/setrepresentativecombinekey")
     public ResponseEntity<Void> setRepresentativeCombineKey(@RequestBody SetRepresentativeCombineKeyRequest setRepresentativeCombineKeyRequest) throws Exception {
