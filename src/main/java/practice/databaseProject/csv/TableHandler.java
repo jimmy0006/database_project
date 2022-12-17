@@ -130,8 +130,7 @@ public class TableHandler implements CSVHandler {
     public boolean saveAsCSV(String tableName) throws IOException {
         Files.createDirectories(localPathOut);
         Path path = localPathOut.resolve(tableName);
-        int id = dbConn.queryTableId(tableName);
-        SQLView sqlResult = dbConn.queryFor(String.format("SELECT name FROM %s WHERE table_id='%d'",SpecialTable.META_COL, id));
+        SQLView sqlResult = dbConn.queryFor(String.format("SELECT name FROM %s WHERE table_id=(SELECT id FROM %s WHERE name='%s')",SpecialTable.META_COL, SpecialTable.META_TABLE,tableName));
         List<String> col = sqlResult.getColumn(0).getStrings();
         String columnName = col.stream().map(s -> "'" + s + "'").collect(Collectors.joining(","));
         String exportQuery = String.join("\n",
