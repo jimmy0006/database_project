@@ -134,7 +134,7 @@ public class Controller {
     public ResponseEntity<Map<String, List<String[]>>> getRepresentativeAttributes() throws Exception {
         return ResponseEntity.ok(standardRepresentativeAttributeDictionary.getAllCategories());
     }
-    @PostMapping(value = "/getcombinekeys")
+    @GetMapping(value = "/getcombinekeys")
     public ResponseEntity<List<String>> getCombineKeys() throws Exception {
         return ResponseEntity.ok(standardCombineKeyDictionary.values());
     }
