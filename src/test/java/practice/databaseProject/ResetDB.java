@@ -83,7 +83,7 @@ public class ResetDB {
             )).getColumn(0).getStrings();
 
             // Add to META_TABLE
-            dbConn.queryExec(String.format("INSERT INTO %s(name) VALUES ('%s', null);", SpecialTable.META_TABLE, table));
+            dbConn.queryExec(String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE, table));
 
             // Get table ID
             int tId = dbConn.queryTableId(table);

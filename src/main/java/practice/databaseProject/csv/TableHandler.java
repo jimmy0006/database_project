@@ -91,7 +91,7 @@ public class TableHandler implements CSVHandler {
                 ";"
         );
 
-        String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s', null);", SpecialTable.META_TABLE, tableName);
+        String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE, tableName);
         if(!dbConn.queryExecAll(createQuery, loadQuery, registerTableQuery)) return false;
 
         int tId = dbConn.queryTableId(tableName);

@@ -38,10 +38,10 @@ public class StandardRepresentativeAttributeDictionary {
     public Map<String, List<String[]>> getAllCategories() {
         int[] tables = dbConn.queryAllTableId();
         Map<String, List<String[]>> result = new HashMap<>();
-        SQLView queryRet = dbConn.queryFor(String.format("SELECT id, name, representativeAttributeDict AS dict FROM `%s`", SpecialTable.META_COL));
+        SQLView queryRet = dbConn.queryFor(String.format("SELECT table_id, name, representativeAttributeDict AS dict FROM `%s`", SpecialTable.META_COL));
         if(queryRet != null) {
             queryRet.rowStream().forEach(rowView -> {
-                String table = dbConn.getTableName(rowView.getInt("id"));
+                String table = dbConn.getTableName(rowView.getInt("table_id"));
                 result.computeIfAbsent(table, k -> new ArrayList<String[]>())
                         .add(new String[]{rowView.getString("name"), rowView.getString("dict")});
             });
