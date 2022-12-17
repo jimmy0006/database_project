@@ -92,13 +92,13 @@ public class Controller {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/getmultiplejoinedtable")
+    @GetMapping(value = "/getmultiplejoinedtable")
     public ResponseEntity<GetMultipleJoinedTableResponse> getMultipleJoinedTable() {
         List<JoinResult> joinResults = multipleJoinService.getInfo();
         GetMultipleJoinedTableResponse getMultipleJoinedTableResponse = new GetMultipleJoinedTableResponse(joinResults);
         return ResponseEntity.ok(getMultipleJoinedTableResponse);
     }
-    @PostMapping(value = "/getonejoinedtable")
+    @GetMapping(value = "/getonejoinedtable")
     public ResponseEntity<GetOneJoinedTableResponse> getOneJoinedTable() {
         JoinResult joinResult = singleJoinService.getInfo();
         GetOneJoinedTableResponse getOneJoinedTableResponse = new GetOneJoinedTableResponse(joinResult);
