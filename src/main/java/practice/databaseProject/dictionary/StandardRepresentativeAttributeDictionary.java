@@ -1,5 +1,6 @@
 package practice.databaseProject.dictionary;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import practice.databaseProject.dbConnector.DBConnector;
 import practice.databaseProject.entity.SQLView;
@@ -8,6 +9,7 @@ import practice.databaseProject.entity.SpecialTable;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class StandardRepresentativeAttributeDictionary {
     DBConnector dbConn;
 
