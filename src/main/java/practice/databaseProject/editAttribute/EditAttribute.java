@@ -38,8 +38,8 @@ public class EditAttribute {
     public TableInfo scanTable(String table, List<String> columns, List<String> columnTypes) {
         TableInfo result = new TableInfo();
         result.setName(table);
-        // 1 type info: get row count and column types
-        String tableInfoQuery = String.format("SELECT COUNT(*) FROM `%s`;", SpecialTable.META_TABLE, table, table);
+        // 1 time info: get row count
+        String tableInfoQuery = String.format("SELECT COUNT(*) FROM `%s`;", table);
         SQLView tInfoRes = dbConnector.queryFor(tableInfoQuery);
         if(tInfoRes == null) {
             result.setCount(-1);
@@ -53,10 +53,10 @@ public class EditAttribute {
         for(int i = 0; i < columnInfos.length; ++i) {
             String normalSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` RLIKE '%s'", table, columns.get(i), PAT_NORMAL);
             String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = 0", table, columns.get(i));
-            // Add IS NOT NULL condition to fix MIN/MAX value not being compuated correctly - other SELECT values should remain the same... should...
+            // Add IS NOT NULL condition to fix MIN/MAX value not being computed correctly - other SELECT values should remain the same... should...
             String columnSQL = String.format(
-                "SELECT (%s) `Normal`, (%s) Zero, COUNT(`%s`) `NotNull`, COUNT(DISTINCT `%s`) `Distinct`, MIN(`%s`) `Min`, MAX(`%s`) `Max` FROM `%s` WHERE `%s` IS NOT NULL;",
-                normalSQL, zeroSQL, columns.get(i), columns.get(i), columns.get(i), columns.get(i), table, columns.get(i)
+                "SELECT (%s) `Normal`, (%s) Zero, COUNT(`%s`) `NotNull`, COUNT(DISTINCT `%s`) `Distinct`, MIN(`%s`) `Min`, MAX(`%s`) `Max` FROM `%s`;",
+                normalSQL, zeroSQL, columns.get(i), columns.get(i), columns.get(i), columns.get(i), table
             );
             SQLView cInfoRes = dbConnector.queryFor(columnSQL);
             if(cInfoRes == null) {
@@ -69,8 +69,8 @@ public class EditAttribute {
             int zero = cInfoRes.getColumn("Zero").getInt(0);
             int notNull = cInfoRes.getColumn("NotNull").getInt(0);
             int distinct = cInfoRes.getColumn("Distinct").getInt(0);
-            String min = cInfoRes.getColumn("Min").getString(0);
-            String max = cInfoRes.getColumn("Max").getString(0);
+            String min = cInfoRes.getColumn("Min").get(0).toString();
+            String max = cInfoRes.getColumn("Max").get(0).toString();
 
             columnInfo.setName(columns.get(i));
             columnInfo.setType(columnTypes.get(i));
