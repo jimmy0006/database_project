@@ -66,6 +66,17 @@ public class TableHandler implements CSVHandler {
         }
         String createQuery = String.format("CREATE TABLE `%s` (%s);", tableName, String.join(", ", queryComponent));
 
+        // Make DB replace empty string as null
+        String varPrefix = "@v";
+        for (int i = 0; i < queryComponent.length; i++) {
+            queryComponent[i] = varPrefix + columns[i];
+        }
+        String colVarTuple = String.format("(%s)", String.join(", ", queryComponent));
+        for (int i = 0; i < queryComponent.length; i++) {
+            queryComponent[i] = String.format("%s = NULLIF(%s%s, '')", columns[i], varPrefix, columns[i]);
+        }
+        String emptyAsNull = String.join(", ", queryComponent);
+
         String loadQuery = String.join("\n",
                 String.format("LOAD DATA LOCAL INFILE '%s'", path.toString()).replace('\\','/'),
                 String.format("REPLACE INTO TABLE `%s`", tableName),
@@ -73,7 +84,11 @@ public class TableHandler implements CSVHandler {
                 "COLUMNS TERMINATED BY ','",
                 "ENCLOSED BY '\"'",
                 "LINES TERMINATED BY '\\n'",
-                "IGNORE 1 LINES;"
+                "IGNORE 1 LINES",
+                colVarTuple,
+                "SET",
+                emptyAsNull,
+                ";"
         );
 
         String registerTableQuery = String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE, tableName);
