@@ -53,9 +53,10 @@ public class EditAttribute {
         for(int i = 0; i < columnInfos.length; ++i) {
             String normalSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` RLIKE '%s'", table, columns.get(i), PAT_NORMAL);
             String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = 0", table, columns.get(i));
+            // Add IS NOT NULL condition to fix MIN/MAX value not being compuated correctly - other SELECT values should remain the same... should...
             String columnSQL = String.format(
-                "SELECT (%s) `Normal`, (%s) Zero, COUNT(`%s`) `NotNull`, COUNT(DISTINCT `%s`) `Distinct`, MIN(`%s`) `Min`, MAX(`%s`) `Max` FROM `%s`;",
-                normalSQL, zeroSQL, columns.get(i), columns.get(i), columns.get(i), columns.get(i), table
+                "SELECT (%s) `Normal`, (%s) Zero, COUNT(`%s`) `NotNull`, COUNT(DISTINCT `%s`) `Distinct`, MIN(`%s`) `Min`, MAX(`%s`) `Max` FROM `%s` WHERE `%s` IS NOT NULL;",
+                normalSQL, zeroSQL, columns.get(i), columns.get(i), columns.get(i), columns.get(i), table, columns.get(i)
             );
             SQLView cInfoRes = dbConnector.queryFor(columnSQL);
             if(cInfoRes == null) {
