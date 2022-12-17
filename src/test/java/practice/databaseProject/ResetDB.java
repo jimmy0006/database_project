@@ -26,24 +26,34 @@ public class ResetDB {
     // DB connection setting
 
     public static void main(String[] args) {
+        List<String> existingTables = null;
+
         try(DBConnector dbConn = new MariaConnector()) {
             dbConn.connect(USERNAME, PASSWORD, IP_ADDR);
 
             // Get tables currently loaded into DB
-            List<String> existingTables = dbConn.queryFor(String.format(
+            existingTables = dbConn.queryFor(String.format(
                     "SELECT TABLE_NAME FROM %s WHERE TABLE_SCHEMA = '%s';", SpecialTable.INFO_TABLE, DB_SCOPE
             )).getColumn(0).getStrings();
 
             // Re-generate DB
             // dropTables(dbConn, existingTables); // Drop every table
             dropTables(dbConn, SpecialTable.META_TABLE, SpecialTable.META_COL);
-            createMetaInfo(dbConn);
+        } catch(Exception e) {
+            e.printStackTrace(System.err);
+        }
+
+        try(DBConnector dbConn = new MariaConnector()) {
+            dbConn.setUp(USERNAME, PASSWORD, IP_ADDR);
 
             // Re-populate
-            analyzeLoaded(dbConn, existingTables);
+            if(existingTables != null)
+                analyzeLoaded(dbConn, existingTables);
+            else
+                System.err.println("Error...");
 
             //
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
     }
@@ -57,28 +67,6 @@ public class ResetDB {
         }
 
         dbConn.queryExecAll(queries);
-    }
-
-    public static void createMetaInfo(DBConnector dbConn) {
-        String metaTable = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
-                "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n" +
-                "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
-                "  PRIMARY KEY (`id`),\n" +
-                "  UNIQUE KEY `name` (`name`)\n" +
-                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
-
-        String metaColumn = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_COL) +
-                "  `table_id` int(10) unsigned NOT NULL,\n" +
-                "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
-                "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
-                "  `representativeAttribute` varchar(50) DEFAULT NULL,\n" +
-                "  `representativeCombineKey` varchar(50) DEFAULT NULL,\n" +
-                String.format("FOREIGN KEY (`table_id`) REFERENCES `%s` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,\n", SpecialTable.META_TABLE) +
-                "  PRIMARY KEY (`table_id`,`name`),\n" +
-                "  KEY `table_id` (`table_id`)\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
-
-        dbConn.queryExecAll(metaTable, metaColumn);
     }
 
     public static void analyzeLoaded(DBConnector dbConn, List<String> existingTables) {
@@ -95,7 +83,7 @@ public class ResetDB {
             )).getColumn(0).getStrings();
 
             // Add to META_TABLE
-            dbConn.queryExec(String.format("INSERT INTO %s(name) VALUES ('%s');", SpecialTable.META_TABLE, table));
+            dbConn.queryExec(String.format("INSERT INTO %s(name) VALUES ('%s', null);", SpecialTable.META_TABLE, table));
 
             // Get table ID
             int tId = dbConn.queryTableId(table);

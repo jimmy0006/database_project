@@ -11,7 +11,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class StandardRepresentativeAttributeDictionary {
-    DBConnector dbConn;
+    private final DBConnector dbConn;
 
 //    public void init() {
 //        dict = new HashSet<>();
