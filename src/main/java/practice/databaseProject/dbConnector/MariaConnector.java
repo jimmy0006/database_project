@@ -28,6 +28,7 @@ public class MariaConnector implements DBConnector {
         String metaTable = String.format("CREATE TABLE IF NOT EXISTS `%s` (\n", SpecialTable.META_TABLE) +
                 "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
+                "  `representativeAttribute` varchar(50) DEFAULT NULL,\n" +
                 "  PRIMARY KEY (`id`),\n" +
                 "  UNIQUE KEY `name` (`name`)\n" +
                 ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;";
@@ -36,7 +37,7 @@ public class MariaConnector implements DBConnector {
                 "  `table_id` int(10) unsigned NOT NULL,\n" +
                 "  `name` varchar(50) NOT NULL DEFAULT '',\n" +
                 "  `type` varchar(50) NOT NULL DEFAULT '',\n" +
-                "  `representativeAttribute` varchar(50) DEFAULT NULL,\n" +
+                "  `representativeAttributeDict` varchar(50) DEFAULT NULL,\n" +
                 "  `representativeCombineKey` varchar(50) DEFAULT NULL,\n" +
                 String.format("FOREIGN KEY (`table_id`) REFERENCES `%s` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,\n", SpecialTable.META_TABLE) +
                 "  PRIMARY KEY (`table_id`,`name`),\n" +

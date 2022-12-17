@@ -150,9 +150,9 @@ public class Controller {
     }
     @PostMapping(value = "/setrepresentativeattribute")
     public ResponseEntity<Void> setRepresentativeAttribute(@RequestBody SetRepresentativeAttributeRequest setRepresentativeAttributeRequest) throws Exception {
-        String query = String.format("UPDATE %s SET representativeAttribute = %s WHERE table_id = '%s', name = '%s';",
-                SpecialTable.META_COL, setRepresentativeAttributeRequest.getRepresentativeAttribute(),
-                setRepresentativeAttributeRequest.getTableId(), setRepresentativeAttributeRequest.getColumnName()
+        String query = String.format("UPDATE %s SET representativeAttribute = '%s' WHERE name = '%s';",
+                SpecialTable.META_TABLE, setRepresentativeAttributeRequest.getColumnName(),
+                setRepresentativeAttributeRequest.getTableName()
         );
         dbConn.queryExec(query);
         return ResponseEntity.ok().build();
