@@ -52,7 +52,7 @@ public class EditAttribute {
         ColumnInfo[] columnInfos = new ColumnInfo[columns.size()];
         for(int i = 0; i < columnInfos.length; ++i) {
             String normalSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` RLIKE '%s'", table, columns.get(i), PAT_NORMAL);
-            String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = 0", table, columns.get(i));
+            String zeroSQL = String.format("SELECT COUNT(*) FROM `%s` WHERE `%s` = '0'", table, columns.get(i));    // Automatic type coercion - evil, just like JS
             // Add IS NOT NULL condition to fix MIN/MAX value not being computed correctly - other SELECT values should remain the same... should...
             String columnSQL = String.format(
                 "SELECT (%s) `Normal`, (%s) Zero, COUNT(`%s`) `NotNull`, COUNT(DISTINCT `%s`) `Distinct`, MIN(`%s`) `Min`, MAX(`%s`) `Max` FROM `%s`;",
