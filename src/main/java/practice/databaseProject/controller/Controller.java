@@ -1,5 +1,6 @@
 package practice.databaseProject.controller;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -31,6 +32,7 @@ public class Controller {
     private final StandardRepresentativeAttributeDictionary standardRepresentativeAttributeDictionary;
     private final StandardCombineKeyDictionary standardCombineKeyDictionary;
 
+    @ApiOperation(value="데이터베이스 연결", notes="해당하는 정보를 저장하여 데이터베이스와 연결한다.")
     @PostMapping(value = "/dbconnect")
     public ResponseEntity<DBConnectionResponse> dbConnect(@RequestBody DBConnectionRequest dbConnectionRequest) {
         standardCombineKeyDictionary.init();
@@ -49,6 +51,7 @@ public class Controller {
         DBConnectionResponse dbConnectionResponse = new DBConnectionResponse(connected);
         return ResponseEntity.ok(dbConnectionResponse);
     }
+    @ApiOperation(value="csv파일 등록", notes="전송된 csv 파일을 데이터베이스에 저장한다.")
     @PostMapping(value = "/csv", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Boolean> readCSV(MultipartFile file) throws IOException {
         Path path = csvReader.saveFile(file);
@@ -56,7 +59,7 @@ public class Controller {
         if(path != null) b = csvReader.loadCSV(path);
         return ResponseEntity.ok(path != null && b);
     }
-
+    @ApiOperation(value="csv파일 다운로드", notes="데이터베이스에서 해당하는 table을 csv파일로 다운로드받는다.")
     @GetMapping(value="/csv")
     public ResponseEntity<Resource> exportCSV(@ModelAttribute GetCSVfileRequest request) throws IOException {
         Resource resource = csvReader.exportCSV(request.getFilename());
@@ -104,7 +107,7 @@ public class Controller {
         GetOneJoinedTableResponse getOneJoinedTableResponse = new GetOneJoinedTableResponse(joinResult);
         return ResponseEntity.ok(getOneJoinedTableResponse);
     }
-
+    @ApiOperation(value="스캔 완료된 테이블 출력", notes="데이터베이스에서 스캔이 완료 된 테이블들의 목록을 출력한다.")
     @GetMapping(value = "/editattribute")
     public ResponseEntity<DomainScanResponse> getTableInfo() {
         int[] tables = dbConn.queryAllTableId();
@@ -120,12 +123,12 @@ public class Controller {
         response.setTableInfos(scanResults);
         return ResponseEntity.ok(response);
     }
-
+    @ApiOperation(value="속성 편집", notes="해당 table의 column을 수정한다.")
     @PostMapping(value = "/editattribute")
     public ResponseEntity<Boolean> updateTableInfo(@RequestBody CastAttributeRequestDto request){
         return ResponseEntity.ok(editAttribute.cast(dbConn.queryTableId(request.getTable()), request.getColumn(), SQLType.valueOf(request.getType())));
     }
-
+    @ApiOperation(value="속성 삭제", notes="해당 table의 column을 삭제한다.")
     @DeleteMapping(value = "/editattribute")
     public ResponseEntity<Boolean> deleteTableAttribute(@RequestBody DeleteAttributeRequestDto request){
         return ResponseEntity.ok(editAttribute.deleteAttribute(dbConn.queryTableId(request.getTable()), request.getColumn()));
