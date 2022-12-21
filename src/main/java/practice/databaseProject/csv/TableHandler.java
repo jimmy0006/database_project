@@ -45,7 +45,9 @@ public class TableHandler implements CSVHandler {
     @Override
     public String[] columnFromCSV(Path path) {
         try(BufferedReader reader = Files.newBufferedReader(path)) {
-            return reader.readLine().split(",");
+            String[] split = reader.readLine().split(",");
+            split[0]=split[0].substring(1);
+            return split;
         } catch (IOException e) {
             e.printStackTrace(System.err);
             return null;
